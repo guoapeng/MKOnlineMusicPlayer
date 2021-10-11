@@ -285,7 +285,6 @@ function initAudio() {
     rem.audio[0].addEventListener('error', audioErr);   // 播放器错误处理
 }
 
-
 // 播放音乐
 // 参数：要播放的音乐数组
 function play(music) {

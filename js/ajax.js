@@ -25,7 +25,6 @@ function ajaxSearch() {
             if(tmpLoading) layer.close(tmpLoading);    // 关闭加载中动画
         },  // complete
         success: function(jsonData){
-            
             // 调试信息输出
             if(mkPlayer.debug) {
                 console.debug("搜索结果数：" + jsonData.length);
@@ -40,14 +39,14 @@ function ajaxSearch() {
                 }
                 musicList[0].item = [];
                 rem.mainList.html('');   // 清空列表中原有的元素
-                addListhead();      // 加载列表头
+                rem.mainList.addListhead();      // 加载列表头
             } else {
                 $("#list-foot").remove();     //已经是加载后面的页码了，删除之前的“加载更多”提示
             }
             
             if(jsonData.length === 0)
             {
-                addListbar("nomore");  // 加载完了
+                rem.mainList.displayNomore(); // 加载完了
                 return false;
             }
             
@@ -68,7 +67,7 @@ function ajaxSearch() {
                     url: null   // mp3链接
                 };
                 musicList[0].item.push(tempItem);   // 保存到搜索结果临时列表中
-                addItem(no, tempItem.name, tempItem.artist, tempItem.album);  // 在前端显示
+                rem.mainList.addItem(no, tempItem.name, tempItem.artist, tempItem.album);  // 在前端显示
             }
             
             rem.dislist = 0;    // 当前显示的是搜索列表
@@ -78,9 +77,9 @@ function ajaxSearch() {
             refreshList();  // 刷新列表，添加正在播放样式
             
             if(no < mkPlayer.loadcount) {
-                addListbar("nomore");  // 没加载满，说明已经加载完了
+                rem.mainList.displayNomore(); // 没加载满，说明已经加载完了
             } else {
-                addListbar("more");     // 还可以点击加载更多
+                rem.mainList.displayMore();  // 还可以点击加载更多
             }
             
             if(rem.loadPage == 2) listToTop();    // 播放列表滚动到顶部
