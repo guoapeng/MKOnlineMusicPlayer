@@ -271,20 +271,6 @@ function playList(id) {
     }
 }
 
-// 初始化 Audio
-function initAudio() {
-    rem.audio = $('<audio></audio>').appendTo('body');
-    
-    // 应用初始音量
-    rem.audio[0].volume = volume_bar.percent;
-    // 绑定歌曲进度变化事件
-    rem.audio[0].addEventListener('timeupdate', updateProgress);   // 更新进度
-    rem.audio[0].addEventListener('play', audioPlay); // 开始播放了
-    rem.audio[0].addEventListener('pause', audioPause);   // 暂停
-    $(rem.audio[0]).on('ended', autoNextMusic);   // 播放结束
-    rem.audio[0].addEventListener('error', audioErr);   // 播放器错误处理
-}
-
 // 播放音乐
 // 参数：要播放的音乐数组
 function play(music) {
@@ -363,20 +349,6 @@ function vBcallback(newVal) {
     
     playerSavedata('volume', newVal); // 存储音量信息
 }
-
-// 下面是进度条处理
-var initProgress = function(){  
-    // 初始化播放进度条
-    music_bar = new mkpgb("#music-progress", 0, mBcallback);
-    music_bar.lock(true);   // 未播放时锁定不让拖动
-    // 初始化音量设定
-    var tmp_vol = playerReaddata('volume');
-    tmp_vol = (tmp_vol != null)? tmp_vol: (rem.isMobile? 1: mkPlayer.volume);
-    if(tmp_vol < 0) tmp_vol = 0;    // 范围限定
-    if(tmp_vol > 1) tmp_vol = 1;
-    if(tmp_vol == 0) $(".btn-quiet").addClass("btn-state-quiet"); // 添加静音样式
-    volume_bar = new mkpgb("#volume-progress", tmp_vol, vBcallback);
-};  
 
 // mk进度条插件
 // 进度条框 id，初始量，回调函数

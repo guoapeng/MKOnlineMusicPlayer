@@ -27,35 +27,22 @@ $(function () {
     if (mkPlayer.debug) {
         console.warn('播放器调试模式已开启，正常使用时请在 js/player.js 中按说明关闭调试模式');
     }
-
     rem.isMobile = device.isMobile();      // 判断是否是移动设备
     rem.webTitle = document.title;      // 记录页面原本的标题
     rem.errCount = 0;                   // 连续播放失败的歌曲数归零
-
-    initProgress();     // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
-    initAudio();    // 初始化 audio 标签，事件绑定
+    rem.controlPanel = new ControlPanel();
+    rem.controlPanel.initProgress();     // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
+    rem.controlPanel.initAudio();    // 初始化 audio 标签，事件绑定
 
     rem.mainList = new MainList(rem.isMobile);
-    if (rem.isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
-        rem.sheetList = $("#sheet");
-    } else {
-        // 滚动条初始化(只在非移动端启用滚动条控件)
-        $("#sheet").mCustomScrollbar({
-            theme: "minimal",
-            advanced: {
-                updateOnContentResize: true // 数据更新后自动刷新滚动条
-            }
-        });
-        rem.sheetList = $("#sheet .mCSB_container");
-    }
-
-    rem.mainList.displayLoading(); // 列表加载中
+    rem.sheetList = new SheetList(rem.isMobile);
+    
     rem.mainList.init();
-    initializeMusicSheet();
-    initializeControlPanel();
-    initBg();
+    rem.sheetList.initializeMusicSheet();
+    rem.controlPanel.initializeControlPanel();
+    rem.controlPanel.initBg();
     // 初始化播放列表
-    initList();
+    rem.sheetList.initList();
 });
 
 function initPlayerCover() {
@@ -66,95 +53,6 @@ function initPlayerCover() {
 
 }
 
-function initBg() {
-
-    if ((mkPlayer.coverbg === true && !rem.isMobile) || (mkPlayer.mcoverbg === true && rem.isMobile)) { // 开启了封面背景
-
-        if (rem.isMobile) {  // 移动端采用另一种模糊方案
-            $('#blur-img').html('<div class="blured-img" id="mobile-blur"></div><div class="blur-mask mobile-mask"></div>');
-        } else {
-            // 背景图片初始化
-            $('#blur-img').backgroundBlur({
-                // imageURL : '', // URL to the image that will be used for blurring
-                blurAmount: 50, // 模糊度
-                imageClass: 'blured-img', // 背景区应用样式
-                overlayClass: 'blur-mask', // 覆盖背景区class，可用于遮罩或额外的效果
-                // duration: 0, // 图片淡出时间
-                endOpacity: 1 // 图像最终的不透明度
-            });
-        }
-        $('.blur-mask').fadeIn(1000);   // 遮罩层淡出
-    }
-}
-
-// 展现系统列表中任意首歌的歌曲信息
-function musicInfo(list, index) {
-    var music = musicList[list].item[index];
-    var tempStr = '<span class="info-title">歌名：</span>' + music.name +
-        '<br><span class="info-title">歌手：</span>' + music.artist +
-        '<br><span class="info-title">专辑：</span>' + music.album;
-
-    if (list == rem.playlist && index == rem.playid) {   // 当前正在播放这首歌，那么还可以顺便获取一下时长。。
-        tempStr += '<br><span class="info-title">时长：</span>' + formatTime(rem.audio[0].duration);
-    }
-
-    tempStr += '<br><span class="info-title">操作：</span>' +
-        '<span class="info-btn" onclick="thisDownload(this)" data-list="' + list + '" data-index="' + index + '">下载</span>' +
-        '<span style="margin-left: 10px" class="info-btn" onclick="thisShare(this)" data-list="' + list + '" data-index="' + index + '">外链</span>';
-
-    layer.open({
-        type: 0,
-        shade: false,
-        title: false, //不显示标题
-        btn: false,
-        content: tempStr
-    });
-
-    if (mkPlayer.debug) {
-        console.info('id: "' + music.id + '",\n' +
-            'name: "' + music.name + '",\n' +
-            'artist: "' + music.artist + '",\n' +
-            'album: "' + music.album + '",\n' +
-            'source: "' + music.source + '",\n' +
-            'url_id: "' + music.url_id + '",\n' +
-            'pic_id: "' + music.pic_id + '",\n' +
-            'lyric_id: "' + music.lyric_id + '",\n' +
-            'pic: "' + music.pic + '",\n' +
-            'url: ""');
-        // 'url: "' + music.url + '"');
-    }
-}
-
-// 展现搜索弹窗
-function searchBox() {
-    var tmpHtml = '<form onSubmit="return searchSubmit()"><div id="search-area">' +
-        '    <div class="search-group">' +
-        '        <input type="text" name="wd" id="search-wd" placeholder="搜索歌手、歌名、专辑" autofocus required>' +
-        '        <button class="search-submit" type="submit">搜 索</button>' +
-        '    </div>' +
-        '    <div class="radio-group" id="music-source">' +
-        '       <label><input type="radio" name="source" value="netease" checked=""> 网易云</label>' +
-        '       <label><input type="radio" name="source" value="tencent"> QQ</label>' +
-        '       <label><input type="radio" name="source" value="xiami"> 虾米</label>' +
-        '       <label><input type="radio" name="source" value="kugou"> 酷狗</label>' +
-        '       <label><input type="radio" name="source" value="baidu"> 百度</label>' +
-        '   </div>' +
-        '</div></form>';
-    layer.open({
-        type: 1,
-        shade: false,
-        title: false, // 不显示标题
-        shade: 0.5,    // 遮罩颜色深度
-        shadeClose: true,
-        content: tmpHtml,
-        cancel: function () {
-        }
-    });
-
-    // 恢复上一次的输入
-    $("#search-wd").focus().val(rem.wd);
-    $("#music-source input[name='source'][value='" + rem.source + "']").prop("checked", "checked");
-}
 
 // 搜索提交
 function searchSubmit() {
@@ -416,44 +314,6 @@ function refreshList() {
 
 }
 
-
-// ==================================sheet list====================================
-// 添加一个歌单
-// 参数：编号、歌单名字、歌单封面
-/* SheetList = function() {
-
-}
- */
-function addSheet(no, name, cover) {
-    if (!cover) cover = "images/player_cover.png";
-    if (!name) name = "读取中...";
-
-    var html = '<div class="sheet-item" data-no="' + no + '">' +
-        '    <img class="sheet-cover" src="' + cover + '">' +
-        '    <p class="sheet-name">' + name + '</p>' +
-        '</div>';
-    rem.sheetList.append(html);
-}
-// 歌单列表底部登陆条
-function sheetBar() {
-    var barHtml;
-    if (playerReaddata('uid')) {
-        barHtml = '已同步 ' + rem.uname + ' 的歌单 <span class="login-btn login-refresh">[刷新]</span> <span class="login-btn login-out">[退出]</span>';
-    } else {
-        barHtml = '我的歌单 <span class="login-btn login-in">[点击同步]</span>';
-    }
-    barHtml = '<span id="sheet-bar"><div class="clear-fix"></div>' +
-        '<div id="user-login" class="sheet-title-bar">' + barHtml +
-        '</div></span>';
-    rem.sheetList.append(barHtml);
-}
-
-// 清空歌单显示
-function clearSheet() {
-    rem.sheetList.html('');
-}
-
-// ==================================end sheet list====================================
 // 选择要显示哪个数据区
 // 参数：要显示的数据区（list、sheet、player）
 function dataBox(choose) {
@@ -517,66 +377,6 @@ function addHis(music) {
     playerSavedata('his', musicList[2].item);  // 保存播放历史列表
 }
 
-// 初始化播放列表
-function initList() {
-    // 登陆过，那就读取出用户的歌单，并追加到系统歌单的后面
-    if (playerReaddata('uid')) {
-        rem.uid = playerReaddata('uid');
-        rem.uname = playerReaddata('uname');
-        // musicList.push(playerReaddata('ulist'));
-        var tmp_ulist = playerReaddata('ulist');    // 读取本地记录的用户歌单
-
-        if (tmp_ulist) musicList.push.apply(musicList, tmp_ulist);   // 追加到系统歌单的后面
-    }
-
-    // 显示所有的歌单
-    for (var i = 1; i < musicList.length; i++) {
-
-        if (i == 1) {    // 正在播放列表
-            // 读取正在播放列表
-            var tmp_item = playerReaddata('playing');
-            if (tmp_item) {  // 读取到了正在播放列表
-                musicList[1].item = tmp_item;
-                mkPlayer.defaultlist = 1;   // 默认显示正在播放列表
-            }
-
-        } else if (i == 2) { // 历史记录列表
-            // 读取历史记录
-            var tmp_item = playerReaddata('his');
-            if (tmp_item) {
-                musicList[2].item = tmp_item;
-            }
-
-            // 列表不是用户列表，并且信息为空，需要ajax读取列表
-        } else if (!musicList[i].creatorID && (musicList[i].item == undefined || (i > 2 && musicList[i].item.length == 0))) {
-            musicList[i].item = [];
-            if (musicList[i].id) {   // 列表ID已定义
-                // ajax获取列表信息
-                ajaxPlayList(musicList[i].id, i);
-            } else {    // 列表 ID 未定义
-                if (!musicList[i].name) musicList[i].name = '未命名';
-            }
-        }
-
-        // 在前端显示出来
-        addSheet(i, musicList[i].name, musicList[i].cover);
-    }
-
-    // 登陆了，但歌单又没有，说明是在刷新歌单
-    if (playerReaddata('uid') && !tmp_ulist) {
-        ajaxUserList(rem.uid);
-        return true;
-    }
-
-    // 首页显示默认列表
-    if (mkPlayer.defaultlist >= musicList.length) mkPlayer.defaultlist = 1;  // 超出范围，显示正在播放列表
-
-    if (musicList[mkPlayer.defaultlist].isloading !== true) loadList(mkPlayer.defaultlist);
-
-    // 显示最后一项登陆条
-    sheetBar();
-}
-
 // 清空用户的同步列表
 function clearUserlist() {
     if (!rem.uid) return false;
@@ -591,8 +391,8 @@ function clearUserlist() {
     musicList.length = i;
 
     // 刷新列表显示
-    clearSheet();
-    initList();
+    rem.sheetList.clearSheet();
+    rem.sheetList.initList();
 }
 
 // 清空当前显示的列表

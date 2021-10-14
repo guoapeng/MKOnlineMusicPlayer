@@ -66,7 +66,7 @@ MainList.prototype = {
         this.listContainer.append(html);
     },
     init: function () {
-
+        this.displayLoading(); // 列表加载中
         // 列表项双击播放
         this.listContainer.on("dblclick", ".list-item", function () {
             var num = parseInt($(this).data("no"));

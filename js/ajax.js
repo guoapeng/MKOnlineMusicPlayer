@@ -360,12 +360,12 @@ function ajaxUserList(uid)
                         item: []
                     };
                     // 存储并显示播放列表
-                    addSheet(musicList.push(tempList) - 1, tempList.name, tempList.cover);
+                    rem.sheetList.addSheet(musicList.push(tempList) - 1, tempList.name, tempList.cover);
                     userList.push(tempList);
                 }
                 playerSavedata('ulist', userList);
                 // 显示退出登录的提示条
-                sheetBar();
+                rem.sheetList.sheetBar();
             }
             // 调试信息输出
             if(mkPlayer.debug) {
