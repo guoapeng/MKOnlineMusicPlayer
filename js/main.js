@@ -35,198 +35,38 @@ $(function () {
     initProgress();     // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
     initAudio();    // 初始化 audio 标签，事件绑定
 
-
+    rem.mainList = new MainList(rem.isMobile);
     if (rem.isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         rem.sheetList = $("#sheet");
-        rem.mainList = new MainList($("#main-list"));
     } else {
         // 滚动条初始化(只在非移动端启用滚动条控件)
-        $("#main-list,#sheet").mCustomScrollbar({
+        $("#sheet").mCustomScrollbar({
             theme: "minimal",
             advanced: {
                 updateOnContentResize: true // 数据更新后自动刷新滚动条
             }
         });
-
         rem.sheetList = $("#sheet .mCSB_container");
-        rem.mainList = new MainList($("#main-list .mCSB_container"));
     }
 
     rem.mainList.displayLoading(); // 列表加载中
+    rem.mainList.init();
+    initializeMusicSheet();
+    initializeControlPanel();
+    initBg();
+    // 初始化播放列表
+    initList();
+});
 
-    // 列表项双击播放
-    $(".music-list").on("dblclick", ".list-item", function () {
-        var num = parseInt($(this).data("no"));
-        if (isNaN(num)) return false;
-        listClick(num);
+function initPlayerCover() {
+    // 图片加载失败处理
+    $('img').error(function () {
+        $(this).attr('src', 'images/player_cover.png');
     });
 
-    // 移动端列表项单击播放
-    $(".music-list").on("click", ".list-item", function () {
-        if (rem.isMobile) {
-            var num = parseInt($(this).data("no"));
-            if (isNaN(num)) return false;
-            listClick(num);
-        }
-    });
+}
 
-    // 小屏幕点击右侧小点查看歌曲详细信息
-    $(".music-list").on("click", ".list-mobile-menu", function () {
-        var num = parseInt($(this).parent().data("no"));
-        musicInfo(rem.dislist, num);
-        return false;
-    });
-
-    // 列表鼠标移过显示对应的操作按钮
-    $(".music-list").on("mousemove", ".list-item", function () {
-        var num = parseInt($(this).data("no"));
-        if (isNaN(num)) return false;
-        // 还没有追加菜单则加上菜单
-        if (!$(this).data("loadmenu")) {
-            var target = $(this).find(".music-name");
-            var html = '<span class="music-name-cult">' +
-                target.html() +
-                '</span>' +
-                '<div class="list-menu" data-no="' + num + '">' +
-                '<span class="list-icon icon-play" data-function="play" title="点击播放这首歌"></span>' +
-                '<span class="list-icon icon-download" data-function="download" title="点击下载这首歌"></span>' +
-                '<span class="list-icon icon-share" data-function="share" title="点击分享这首歌"></span>' +
-                '</div>';
-            target.html(html);
-            $(this).data("loadmenu", true);
-        }
-    });
-
-    // 列表中的菜单点击
-    $(".music-list").on("click", ".icon-play,.icon-download,.icon-share", function () {
-        var num = parseInt($(this).parent().data("no"));
-        if (isNaN(num)) return false;
-        switch ($(this).data("function")) {
-            case "play":    // 播放
-                listClick(num);     // 调用列表点击处理函数
-                break;
-            case "download":    // 下载
-                ajaxUrl(musicList[rem.dislist].item[num], download);
-                break;
-            case "share":   // 分享
-                // ajax 请求数据
-                ajaxUrl(musicList[rem.dislist].item[num], ajaxShare);
-                break;
-        }
-        return true;
-    });
-
-    // 点击加载更多
-    $(".music-list").on("click", ".list-loadmore", function () {
-        $(".list-loadmore").removeClass('list-loadmore');
-        $(".list-loadmore").html('加载中...');
-        ajaxSearch();
-    });
-
-    // 点击专辑显示专辑歌曲
-    $("#sheet").on("click", ".sheet-cover,.sheet-name", function () {
-        var num = parseInt($(this).parent().data("no"));
-        // 是用户列表，但是还没有加载数据
-        if (musicList[num].item.length === 0 && musicList[num].creatorID) {
-            layer.msg('列表读取中...', { icon: 16, shade: 0.01, time: 500 }); // 0代表加载的风格，支持0-2
-            // ajax加载数据
-            ajaxPlayList(musicList[num].id, num, loadList);
-            return true;
-        }
-        loadList(num);
-    });
-
-    // 点击同步云音乐
-    $("#sheet").on("click", ".login-in", function () {
-        layer.prompt(
-            {
-                title: '请输入您的网易云 UID',
-                // value: '',  // 默认值
-                btn: ['确定', '取消', '帮助'],
-                btn3: function (index, layero) {
-                    layer.open({
-                        title: '如何获取您的网易云UID？'
-                        , shade: 0.6 //遮罩透明度
-                        , anim: 0 //0-6的动画形式，-1不开启
-                        , content:
-                            '1、首先<a href="http://music.163.com/" target="_blank">点我(http://music.163.com/)</a>打开网易云音乐官网<br>' +
-                            '2、然后点击页面右上角的“登录”，登录您的账号<br>' +
-                            '3、点击您的头像，进入个人中心<br>' +
-                            '4、此时<span style="color:red">浏览器地址栏</span> <span style="color: green">/user/home?id=</span> 后面的<span style="color:red">数字</span>就是您的网易云 UID'
-                    });
-                }
-            },
-            function (val, index) {   // 输入后的回调函数
-                if (isNaN(val)) {
-                    layer.msg('uid 只能是数字', { anim: 6 });
-                    return false;
-                }
-                layer.close(index);     // 关闭输入框
-                ajaxUserList(val);
-            });
-    });
-
-    // 刷新用户列表
-    $("#sheet").on("click", ".login-refresh", function () {
-        playerSavedata('ulist', '');
-        layer.msg('刷新歌单');
-        clearUserlist();
-    });
-
-    // 退出登录
-    $("#sheet").on("click", ".login-out", function () {
-        playerSavedata('uid', '');
-        playerSavedata('ulist', '');
-        layer.msg('已退出');
-        clearUserlist();
-    });
-
-    // 播放、暂停按钮的处理
-    $("#music-info").click(function () {
-        if (rem.playid === undefined) {
-            layer.msg('请先播放歌曲');
-            return false;
-        }
-
-        musicInfo(rem.playlist, rem.playid);
-    });
-
-    // 播放、暂停按钮的处理
-    $(".btn-play").click(function () {
-        pause();
-    });
-
-    // 循环顺序的处理
-    $(".btn-order").click(function () {
-        orderChange();
-    });
-    // 上一首歌
-    $(".btn-prev").click(function () {
-        prevMusic();
-    });
-
-    // 下一首
-    $(".btn-next").click(function () {
-        nextMusic();
-    });
-
-    // 静音按钮点击事件
-    $(".btn-quiet").click(function () {
-        var oldVol;     // 之前的音量值
-        if ($(this).is('.btn-state-quiet')) {
-            oldVol = $(this).data("volume");
-            oldVol = oldVol ? oldVol : (rem.isMobile ? 1 : mkPlayer.volume);  // 没找到记录的音量，则重置为默认音量
-            $(this).removeClass("btn-state-quiet");     // 取消静音
-        } else {
-            oldVol = volume_bar.percent;
-            $(this).addClass("btn-state-quiet");        // 开启静音
-            $(this).data("volume", oldVol); // 记录当前音量值
-            oldVol = 0;
-        }
-        playerSavedata('volume', oldVol); // 存储音量信息
-        volume_bar.goto(oldVol);    // 刷新音量显示
-        if (rem.audio[0] !== undefined) rem.audio[0].volume = oldVol;  // 应用音量
-    });
+function initBg() {
 
     if ((mkPlayer.coverbg === true && !rem.isMobile) || (mkPlayer.mcoverbg === true && rem.isMobile)) { // 开启了封面背景
 
@@ -243,18 +83,9 @@ $(function () {
                 endOpacity: 1 // 图像最终的不透明度
             });
         }
-
         $('.blur-mask').fadeIn(1000);   // 遮罩层淡出
     }
-
-    // 图片加载失败处理
-    $('img').error(function () {
-        $(this).attr('src', 'images/player_cover.png');
-    });
-
-    // 初始化播放列表
-    initList();
-});
+}
 
 // 展现系统列表中任意首歌的歌曲信息
 function musicInfo(list, index) {
