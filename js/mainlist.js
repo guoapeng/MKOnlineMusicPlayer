@@ -3,7 +3,6 @@
 // 加载列表中的提示条
 // 参数：类型（more、nomore、loading、nodata、clear）
 MainList = function (isMobile) {
-    this.listContainer = listContainer;
     
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.listContainer = $("#main-list");
