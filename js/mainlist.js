@@ -1,8 +1,74 @@
 
+// 向列表中载入某个播放列表
+function loadList(list) {
+    if (musicList[list].isloading === true) {
+        layer.msg('列表读取中...', { icon: 16, shade: 0.01, time: 500 });
+        return true;
+    }
+
+    rem.dislist = list;     // 记录当前显示的列表
+
+    dataBox("list");    // 在主界面显示出播放列表
+
+    // 调试信息输出
+    if (mkPlayer.debug) {
+        if (musicList[list].id) {
+            console.log('加载播放列表 ' + list + ' - ' + musicList[list].name + '\n' +
+                'id: ' + musicList[list].id + ',\n' +
+                'name: "' + musicList[list].name + '",\n' +
+                'cover: "' + musicList[list].cover + '",\n' +
+                'item: []');
+        } else {
+            console.log('加载播放列表 ' + list + ' - ' + musicList[list].name);
+        }
+    }
+
+    rem.mainList.clearMainList(); // 清空列表中原有的元素
+    //TODO: remove this method
+    rem.mainList.addListhead();      // 向列表中加入列表头
+
+    if (musicList[list].item.length == 0) {
+        rem.mainList.displayNomore(); // 列表中没有数据
+    } else {
+
+        // 逐项添加数据
+        for (var i = 0; i < musicList[list].item.length; i++) {
+            var tmpMusic = musicList[list].item[i];
+
+            rem.mainList.addItem(i + 1, tmpMusic.name, tmpMusic.artist, tmpMusic.album);
+
+            // 音乐链接均有有效期限制,重新显示列表时清空处理
+            if (list == 1 || list == 2) tmpMusic.url = "";
+        }
+
+        // 列表加载完成后的处理
+        if (list == 1 || list == 2) {    // 历史记录和正在播放列表允许清空
+            rem.mainList.displayClearBtn(); // 清空列表
+        }
+
+        if (rem.playlist === undefined) {    // 未曾播放过
+            if (mkPlayer.autoplay == true) pause();  // 设置了自动播放，则自动播放
+        } else {
+            rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
+        }
+
+        listToTop();    // 播放列表滚动到顶部
+    }
+}
+
+// 播放列表滚动到顶部
+function listToTop() {
+    if (rem.isMobile) {
+        $("#main-list").animate({ scrollTop: 0 }, 200);
+    } else {
+        $("#main-list").mCustomScrollbar("scrollTo", 0, "top");
+    }
+}
+
 //============================== behaviore of mainlist =========================================
 // 加载列表中的提示条
 // 参数：类型（more、nomore、loading、nodata、clear）
-MainList = function (isMobile) {
+ function MainList(isMobile) {
     
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.listContainer = $("#main-list");

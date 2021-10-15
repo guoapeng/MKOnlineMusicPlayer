@@ -67,3 +67,48 @@ function searchBox() {
     $("#search-wd").focus().val(rem.wd);
     $("#music-source input[name='source'][value='" + rem.source + "']").prop("checked", "checked");
 }
+
+// 搜索提交
+function searchSubmit() {
+    var wd = $("#search-wd").val();
+    if (!wd) {
+        layer.msg('搜索内容不能为空', { anim: 6, offset: 't' });
+        $("#search-wd").focus();
+        return false;
+    }
+    rem.source = $("#music-source input[name='source']:checked").val();
+
+    layer.closeAll('page');     // 关闭搜索框
+
+    rem.loadPage = 1;   // 已加载页数复位
+    rem.wd = wd;    // 搜索词
+    ajaxSearch();   // 加载搜索结果
+    return false;
+}
+
+
+// 将时间格式化为 00:00 的格式
+// 参数：原始时间
+function formatTime(time) {
+    var hour, minute, second;
+    hour = String(parseInt(time / 3600, 10));
+    if (hour.length == 1) hour = '0' + hour;
+
+    minute = String(parseInt((time % 3600) / 60, 10));
+    if (minute.length == 1) minute = '0' + minute;
+
+    second = String(parseInt(time % 60, 10));
+    if (second.length == 1) second = '0' + second;
+
+    if (hour > 0) {
+        return hour + ":" + minute + ":" + second;
+    } else {
+        return minute + ":" + second;
+    }
+}
+
+// url编码
+// 输入参数：待编码的字符串
+function urlEncode(String) {
+    return encodeURIComponent(String).replace(/'/g, "%27").replace(/"/g, "%22");
+}

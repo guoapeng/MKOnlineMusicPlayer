@@ -97,7 +97,7 @@ function orderChange() {
 // 播放
 function audioPlay() {
     rem.paused = false;     // 更新状态（未暂停）
-    refreshList();      // 刷新状态，显示播放的波浪
+    rem.sheetList.refreshList();      // 刷新状态，显示播放的波浪
     $(".btn-play").addClass("btn-state-paused");        // 恢复暂停
     
     if((mkPlayer.dotshine === true && !rem.isMobile) || (mkPlayer.mdotshine === true && rem.isMobile)) {
@@ -235,7 +235,7 @@ function listClick(no) {
             playerSavedata('playing', musicList[1].item);   // 保存正在播放列表
             
             // 刷新正在播放的列表的动画
-            refreshSheet();     // 更改正在播放的列表的显示
+            rem.sheetList.refreshSheet();     // 更改正在播放的列表的显示
         }
     }
     
@@ -302,7 +302,7 @@ function play(music) {
     if(rem.dislist == 2 && rem.playlist !== 2) {
         loadList(2);
     } else {
-        refreshList();  // 更新列表显示
+        rem.sheetList.refreshList();  // 更新列表显示
     }
     
     try {

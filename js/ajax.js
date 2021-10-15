@@ -74,7 +74,7 @@ function ajaxSearch() {
             rem.loadPage ++;    // 已加载的列数+1
             
             dataBox("list");    // 在主界面显示出播放列表
-            refreshList();  // 刷新列表，添加正在播放样式
+            rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
             
             if(no < mkPlayer.loadcount) {
                 rem.mainList.displayNomore(); // 没加载满，说明已经加载完了

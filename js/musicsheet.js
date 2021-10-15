@@ -1,4 +1,4 @@
-SheetList = function (isMobile) {
+function SheetList(isMobile) {
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.listContainer = this.listContainer;
     } else {
@@ -14,7 +14,7 @@ SheetList = function (isMobile) {
     }
 }
 
-SheetList.protype = {
+SheetList.prototype = {
     // 添加一个歌单
     // 参数：编号、歌单名字、歌单封面
     addSheet: function (no, name, cover) {
@@ -45,6 +45,7 @@ SheetList.protype = {
     initializeMusicSheet: function () {
 
         // 点击专辑显示专辑歌曲
+        var that = this;
         this.listContainer.on("click", ".sheet-cover,.sheet-name", function () {
             var num = parseInt($(this).parent().data("no"));
             // 是用户列表，但是还没有加载数据
@@ -91,7 +92,7 @@ SheetList.protype = {
         this.listContainer.on("click", ".login-refresh", function () {
             playerSavedata('ulist', '');
             layer.msg('刷新歌单');
-            clearUserlist();
+            that.clearUserlist();
         });
 
         // 退出登录
@@ -99,7 +100,7 @@ SheetList.protype = {
             playerSavedata('uid', '');
             playerSavedata('ulist', '');
             layer.msg('已退出');
-            clearUserlist();
+            that.clearUserlist();
         });
     },
 
@@ -145,7 +146,7 @@ SheetList.protype = {
             }
 
             // 在前端显示出来
-            rem.sheetList.addSheet(i, musicList[i].name, musicList[i].cover);
+            this.addSheet(i, musicList[i].name, musicList[i].cover);
         }
 
         // 登陆了，但歌单又没有，说明是在刷新歌单
@@ -160,11 +161,79 @@ SheetList.protype = {
         if (musicList[mkPlayer.defaultlist].isloading !== true) loadList(mkPlayer.defaultlist);
 
         // 显示最后一项登陆条
-        this.listContainer.sheetBar();
+        this.sheetBar();
     },
 
     // 清空歌单显示
     clearSheet: function () {
         this.listContainer.html('');
+    },
+
+
+    // 清空用户的同步列表
+    clearUserlist: function () {
+        if (!rem.uid) return false;
+
+        // 查找用户歌单起点
+        for (var i = 1; i < musicList.length; i++) {
+            if (musicList[i].creatorID !== undefined && musicList[i].creatorID == rem.uid) break;    // 找到了就退出
+        }
+
+        // 删除记忆数组
+        musicList.splice(i, musicList.length - i); // 先删除相同的
+        musicList.length = i;
+
+        // 刷新列表显示
+        this.clearSheet();
+        this.initList();
+    },
+
+    // 清空当前显示的列表
+    clearDislist: function () {
+        musicList[rem.dislist].item.length = 0;  // 清空内容
+        if (rem.dislist == 1) {  // 正在播放列表
+            playerSavedata('playing', '');  // 清空本地记录
+            $(".sheet-item[data-no='1'] .sheet-cover").attr('src', 'images/player_cover.png');    // 恢复正在播放的封面
+        } else if (rem.dislist == 2) {   // 播放记录
+            playerSavedata('his', '');  // 清空本地记录
+        }
+        layer.msg('列表已被清空');
+        dataBox("sheet");    // 在主界面显示出音乐专辑
+    },
+
+
+    // 刷新播放列表，为正在播放的项添加正在播放中的标识
+    refreshSheet: function () {
+        // 调试信息输出
+        if (mkPlayer.debug) {
+            console.log("开始播放列表 " + musicList[rem.playlist].name + " 中的歌曲");
+        }
+
+        $(".sheet-playing").removeClass("sheet-playing");        // 移除其它的正在播放
+
+        $(".sheet-item[data-no='" + rem.playlist + "']").addClass("sheet-playing"); // 添加样式
+    },
+
+    // 刷新当前显示的列表，如果有正在播放则添加样式
+    refreshList: function () {
+        // 还没播放过，不用对比了
+        if (rem.playlist === undefined) return true;
+
+        $(".list-playing").removeClass("list-playing");        // 移除其它的正在播放
+
+        if (rem.paused !== true) {   // 没有暂停
+            for (var i = 0; i < musicList[rem.dislist].item.length; i++) {
+                // 与正在播放的歌曲 id 相同
+                if ((musicList[rem.dislist].item[i].id !== undefined) &&
+                    (musicList[rem.dislist].item[i].id == musicList[1].item[rem.playid].id) &&
+                    (musicList[rem.dislist].item[i].source == musicList[1].item[rem.playid].source)) {
+                    $(".list-item[data-no='" + i + "']").addClass("list-playing");  // 添加正在播放样式
+
+                    return true;    // 一般列表中只有一首，找到了赶紧跳出
+                }
+            }
+        }
+
     }
+
 }
