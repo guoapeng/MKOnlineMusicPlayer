@@ -1,3 +1,34 @@
+// 判断是否是移动设备
+var device = {
+    Android: function () {
+        return navigator.userAgent.match(/Android/i) ? true : false;
+    },
+    BlackBerry: function () {
+        return navigator.userAgent.match(/BlackBerry/i) ? true : false;
+    },
+    iOS: function () {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
+    },
+    Windows: function () {
+        return navigator.userAgent.match(/IEMobile/i) ? true : false;
+    },
+    isMobile: function () {
+        return (device.Android() || device.BlackBerry() || device.iOS() || device.Windows());
+    }
+};
+
+String.format = function() {
+    if( arguments.length == 0 )
+        return null;
+
+    var str = arguments[0];
+    for(var i=1;i<arguments.length;i++) {
+        var re = new RegExp('\\{' + (i-1) + '\\}','gm');
+        str = str.replace(re, arguments[i]);
+    }
+    return str;
+}
+
 // 展现系统列表中任意首歌的歌曲信息
 function musicInfo(list, index) {
     var music = musicList[list].item[index];
@@ -10,8 +41,8 @@ function musicInfo(list, index) {
     }
 
     tempStr += '<br><span class="info-title">操作：</span>' +
-        '<span class="info-btn" onclick="thisDownload(this)" data-list="' + list + '" data-index="' + index + '">下载</span>' +
-        '<span style="margin-left: 10px" class="info-btn" onclick="thisShare(this)" data-list="' + list + '" data-index="' + index + '">外链</span>';
+        '<span class="info-btn" onclick="rem.controlPanel.downloadThis(this)" data-list="' + list + '" data-index="' + index + '">下载</span>' +
+        '<span style="margin-left: 10px" class="info-btn" onclick="rem.controlPanel.shareThis(this)" data-list="' + list + '" data-index="' + index + '">外链</span>';
 
     layer.open({
         type: 0,

@@ -22,8 +22,6 @@
     aLink.dispatchEvent(event);
 }
 
-
-
 // 下载歌曲
 // 参数：包含歌曲信息的数组
 function download(music) {

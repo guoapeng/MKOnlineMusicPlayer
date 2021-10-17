@@ -20,8 +20,6 @@ var mkPlayer = {
     debug: false   // 是否开启调试模式(true/false)
 };
 
-
-
 /*******************************************************
  * 以下内容是播放器核心文件，不建议进行修改，否则可能导致播放器无法正常使用!
  * 
@@ -55,10 +53,10 @@ function pause() {
         if(rem.playlist === undefined) {
             rem.playlist = rem.dislist;
             
-            musicList[1].item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+            playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
             
             // 正在播放 列表项已发生变更，进行保存
-            playerSavedata('playing', musicList[1].item);   // 保存正在播放列表
+            playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
             
             listClick(0);
         }
@@ -156,8 +154,8 @@ function nextMusic() {
             playList(rem.playid + 1);
         break;
         case 3: 
-            if (musicList[1] && musicList[1].item.length) {
-                var id = parseInt(Math.random() * musicList[1].item.length);
+            if (playingMusicList && playingMusicList.item.length) {
+                var id = parseInt(Math.random() * playingMusicList.item.length);
                 playList(id);
             }
         break;
@@ -197,12 +195,12 @@ function listClick(no) {
     }
     
     // 搜索列表的歌曲要额外处理
-    if(rem.dislist === 0) {
+    if(rem.dislist === CONST.SEARCH_RESULT_LIST_ID) {
         
         // 没播放过
         if(rem.playlist === undefined) {
             rem.playlist = 1;   // 设置播放列表为 正在播放 列表
-            rem.playid = musicList[1].item.length - 1;  // 临时设置正在播放的曲目为 正在播放 列表的最后一首
+            rem.playid = playingMusicList.item.length - 1;  // 临时设置正在播放的曲目为 正在播放 列表的最后一首
         }
         
         // 获取选定歌曲的信息
@@ -210,8 +208,8 @@ function listClick(no) {
         
         
         // 查找当前的播放列表中是否已经存在这首歌
-        for(var i=0; i<musicList[1].item.length; i++) {
-            if(musicList[1].item[i].id == tmpMusic.id && musicList[1].item[i].source == tmpMusic.source) {
+        for(var i=0; i<playingMusicList.item.length; i++) {
+            if(playingMusicList.item[i].id == tmpMusic.id && playingMusicList.item[i].source == tmpMusic.source) {
                 tmpid = i;
                 playList(tmpid);    // 找到了直接播放
                 return true;    // 退出函数
@@ -220,19 +218,19 @@ function listClick(no) {
         
         
         // 将点击的这项追加到正在播放的条目的下方
-        musicList[1].item.splice(rem.playid + 1, 0, tmpMusic);
+        playingMusicList.item.splice(rem.playid + 1, 0, tmpMusic);
         tmpid = rem.playid + 1;
         
         // 正在播放 列表项已发生变更，进行保存
-        playerSavedata('playing', musicList[1].item);   // 保存正在播放列表
+        playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
     } else {    // 普通列表
         // 与之前不是同一个列表了（在播放别的列表的歌曲）或者是首次播放
-        if((rem.dislist !== rem.playlist && rem.dislist !== 1) || rem.playlist === undefined) {
+        if((rem.dislist !== rem.playlist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playlist === undefined) {
             rem.playlist = rem.dislist;     // 记录正在播放的列表
-            musicList[1].item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+            playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
             
             // 正在播放 列表项已发生变更，进行保存
-            playerSavedata('playing', musicList[1].item);   // 保存正在播放列表
+            playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
             
             // 刷新正在播放的列表的动画
             rem.sheetList.refreshSheet();     // 更改正在播放的列表的显示
@@ -254,20 +252,20 @@ function playList(id) {
     }
     
     // 没有歌曲，跳出
-    if(musicList[1].item.length <= 0) return true;
+    if(playingMusicList.item.length <= 0) return true;
     
     // ID 范围限定
-    if(id >= musicList[1].item.length) id = 0;
-    if(id < 0) id = musicList[1].item.length - 1;
+    if(id >= playingMusicList.item.length) id = 0;
+    if(id < 0) id = playingMusicList.item.length - 1;
     
     // 记录正在播放的歌曲在正在播放列表中的 id
     rem.playid = id;
     
     // 如果链接为空，则 ajax 获取数据后再播放
-    if(musicList[1].item[id].url === null || musicList[1].item[id].url === "") {
-        ajaxUrl(musicList[1].item[id], play);
+    if(playingMusicList.item[id].url === null || playingMusicList.item[id].url === "") {
+        ajaxUrl(playingMusicList.item[id], play);
     } else {
-        play(musicList[1].item[id]);
+        play(playingMusicList.item[id]);
     }
 }
 
@@ -299,8 +297,8 @@ function play(music) {
     addHis(music);  // 添加到播放历史
     
     // 如果当前主界面显示的是播放历史，那么还需要刷新列表显示
-    if(rem.dislist == 2 && rem.playlist !== 2) {
-        loadList(2);
+    if(rem.dislist == CONST.PLAYED_HISTORY_LIST_ID && rem.playlist !== CONST.PLAYED_HISTORY_LIST_ID) {
+        rem.mainList.loadList(2);
     } else {
         rem.sheetList.refreshList();  // 更新列表显示
     }
@@ -320,7 +318,6 @@ function play(music) {
     ajaxLyric(music, lyricCallback);     // ajax加载歌词
     music_bar.lock(false);  // 取消进度条锁定
 }
-
 
 // 我的要求并不高，保留这一句版权信息可好？
 // 保留了，你不会损失什么；而保留版权，是对作者最大的尊重。

@@ -1,16 +1,14 @@
- function ControlPanel () {
+function ControlPanel() {
 
 }
 
 ControlPanel.prototype = {
     initializeControlPanel: function () {
-
         $("#music-info").click(function () {
             if (rem.playid === undefined) {
                 layer.msg('请先播放歌曲');
                 return false;
             }
-
             musicInfo(rem.playlist, rem.playid);
         });
         // 播放、暂停按钮的处理
@@ -98,57 +96,64 @@ ControlPanel.prototype = {
             }
             $('.blur-mask').fadeIn(1000);   // 遮罩层淡出
         }
+    },
+    // 选择要显示哪个数据区
+    // 参数：要显示的数据区（list、sheet、player）
+    dataBox: function (choose) {
+        $('.btn-box .active').removeClass('active');
+        switch (choose) {
+            case "list":    // 显示播放列表
+                if ($(".btn[data-action='player']").css('display') !== 'none') {
+                    $("#player").hide();
+                } else if ($("#player").css('display') == 'none') {
+                    $("#player").fadeIn();
+                }
+                $("#main-list").fadeIn();
+                $("#sheet").fadeOut();
+                if (rem.dislist == CONST.PLAYING_LIST_ID || rem.dislist == rem.playlist) {  // 正在播放
+                    $(".btn[data-action='playing']").addClass('active');
+                } else if (rem.dislist == CONST.SEARCH_RESULT_LIST_ID) {  // 搜索
+                    $(".btn[data-action='search']").addClass('active');
+                }
+                break;
+
+            case "sheet":   // 显示专辑
+                if ($(".btn[data-action='player']").css('display') !== 'none') {
+                    $("#player").hide();
+                } else if ($("#player").css('display') == 'none') {
+                    $("#player").fadeIn();
+                }
+                $("#sheet").fadeIn();
+                $("#main-list").fadeOut();
+                $(".btn[data-action='sheet']").addClass('active');
+                break;
+
+            case "player":  // 显示播放器
+                $("#player").fadeIn();
+                $("#sheet").fadeOut();
+                $("#main-list").fadeOut();
+                $(".btn[data-action='player']").addClass('active');
+                break;
+        }
+    },
+
+    // 下载正在播放的这首歌
+    downloadThis: function (obj) {
+        ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], download);
+    },
+
+    // 分享正在播放的这首歌
+    shareThis: function (obj) {
+        ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], ajaxShare);
     }
 
 }
 
-// 下载正在播放的这首歌
-function thisDownload(obj) {
-    ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], download);
-}
+//TODO: remove it since it's not in use
+function initPlayerCover() {
+    // 图片加载失败处理
+    $('img').error(function () {
+        $(this).attr('src', 'images/player_cover.png');
+    });
 
-// 分享正在播放的这首歌
-function thisShare(obj) {
-    ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], ajaxShare);
-}
-
-
-// 选择要显示哪个数据区
-// 参数：要显示的数据区（list、sheet、player）
-function dataBox(choose) {
-    $('.btn-box .active').removeClass('active');
-    switch (choose) {
-        case "list":    // 显示播放列表
-            if ($(".btn[data-action='player']").css('display') !== 'none') {
-                $("#player").hide();
-            } else if ($("#player").css('display') == 'none') {
-                $("#player").fadeIn();
-            }
-            $("#main-list").fadeIn();
-            $("#sheet").fadeOut();
-            if (rem.dislist == 1 || rem.dislist == rem.playlist) {  // 正在播放
-                $(".btn[data-action='playing']").addClass('active');
-            } else if (rem.dislist == 0) {  // 搜索
-                $(".btn[data-action='search']").addClass('active');
-            }
-            break;
-
-        case "sheet":   // 显示专辑
-            if ($(".btn[data-action='player']").css('display') !== 'none') {
-                $("#player").hide();
-            } else if ($("#player").css('display') == 'none') {
-                $("#player").fadeIn();
-            }
-            $("#sheet").fadeIn();
-            $("#main-list").fadeOut();
-            $(".btn[data-action='sheet']").addClass('active');
-            break;
-
-        case "player":  // 显示播放器
-            $("#player").fadeIn();
-            $("#sheet").fadeOut();
-            $("#main-list").fadeOut();
-            $(".btn[data-action='player']").addClass('active');
-            break;
-    }
 }

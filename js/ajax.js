@@ -39,7 +39,7 @@ function ajaxSearch() {
                 }
                 musicList[0].item = [];
                 rem.mainList.html('');   // 清空列表中原有的元素
-                rem.mainList.addListhead();      // 加载列表头
+                rem.mainList.createListHeader();      // 加载列表头
             } else {
                 $("#list-foot").remove();     //已经是加载后面的页码了，删除之前的“加载更多”提示
             }
@@ -70,10 +70,10 @@ function ajaxSearch() {
                 rem.mainList.addItem(no, tempItem.name, tempItem.artist, tempItem.album);  // 在前端显示
             }
             
-            rem.dislist = 0;    // 当前显示的是搜索列表
+            rem.dislist = CONST.SEARCH_RESULT_LIST_ID;    // 当前显示的是搜索列表
             rem.loadPage ++;    // 已加载的列数+1
             
-            dataBox("list");    // 在主界面显示出播放列表
+            rem.controlPanel.dataBox("list");    // 在主界面显示出播放列表
             rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
             
             if(no < mkPlayer.loadcount) {
@@ -82,7 +82,7 @@ function ajaxSearch() {
                 rem.mainList.displayMore();  // 还可以点击加载更多
             }
             
-            if(rem.loadPage == 2) listToTop();    // 播放列表滚动到顶部
+            if(rem.loadPage == 2) rem.mainList.listToTop();    // 播放列表滚动到顶部
         },   //success
         error: function(XMLHttpRequest, textStatus, errorThrown) {
             layer.msg('搜索结果获取失败 - ' + XMLHttpRequest.status);
@@ -261,7 +261,7 @@ function ajaxPlayList(lid, id, callback) {
             musicList[id] = tempList;
             
             // 首页显示默认列表
-            if(id == mkPlayer.defaultlist) loadList(id);
+            if(id == mkPlayer.defaultlist) rem.mainList.loadList(id);
             if(callback) callback(id);    // 调用回调函数
             
             // 改变前端列表

@@ -147,3 +147,48 @@ var musicList = [
         id: 440103454   // 网易云歌单ID
     }   // 播放列表的最后一项大括号后面不要加逗号
 ];
+
+
+var playingMusicList = musicList[CONST.PLAYING_LIST_ID];
+var historyMusicList = musicList[CONST.PLAYED_HISTORY_LIST_ID];
+
+// 在 ajax 获取了音乐的信息后再进行更新
+// 参数：要进行更新的音乐
+function updateMinfo(music) {
+    // 不含有 id 的歌曲无法更新
+    if (!music.id) return false;
+
+    // 循环查找播放列表并更新信息
+    for (var i = 0; i < musicList.length; i++) {
+        for (var j = 0; j < musicList[i].item.length; j++) {
+            // ID 对上了，那就更新信息
+            if (musicList[i].item[j].id == music.id && musicList[i].item[j].source == music.source) {
+                musicList[i].item[j] == music;  // 更新音乐信息
+                j = musicList[i].item.length;   // 一个列表中只找一首，找到了就跳出
+            }
+        }
+    }
+}
+
+// 将当前歌曲加入播放历史
+// 参数：要添加的音乐
+function addHis(music) {
+    if (rem.playlist == CONST.PLAYED_HISTORY_LIST_ID) return true;  // 在播放“播放记录”列表则不作改变
+
+    if (historyMusicList.item.length > 300) historyMusicList.item.length = 299; // 限定播放历史最多是 300 首
+
+    if (music.id !== undefined && music.id !== '') {
+        // 检查历史数据中是否有这首歌，如果有则提至前面
+        for (var i = 0; i < historyMusicList.item.length; i++) {
+            if (historyMusicList.item[i].id == music.id && historyMusicList.item[i].source == music.source) {
+                historyMusicList.item.splice(i, 1); // 先删除相同的
+                i = historyMusicList.item.length;   // 找到了，跳出循环
+            }
+        }
+    }
+
+    // 再放到第一位
+    historyMusicList.item.unshift(music);
+
+    playerSavedata('his', historyMusicList.item);  // 保存播放历史列表
+}
