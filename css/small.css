@@ -5,7 +5,6 @@
  * 编写：mengkun(http://mkblog.cn)
  * 时间：2017-9-13
  *************************************************/
-
 /* 小于 900px 采用这个样式 */
 @media screen and (max-width: 900px) {
     /*隐藏头部logo*/
@@ -16,7 +15,6 @@
     .center {
         top: 0;
     }
-    
     /* 调出播放器按钮 */
     .btn[data-action='player'] {
         display: inline-block;
@@ -68,7 +66,6 @@
     .data-area {
         right: 0;
     }
-    
     
     /*列表菜单不显示*/
     .list-menu {

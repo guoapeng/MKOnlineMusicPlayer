@@ -4,7 +4,6 @@
  * 编写：mengkun(https://mkblog.cn)
  * 时间：2018-3-11
  *************************************************/
-
 // ajax加载搜索结果
 var DataFetcher = function (){
 
@@ -140,7 +139,6 @@ DataFetcher.prototype = {
                 console.error(XMLHttpRequest + textStatus + errorThrown);
             }   // error 
         }); //ajax
-        
     },
     
     // 完善获取音乐封面图
@@ -176,9 +174,7 @@ DataFetcher.prototype = {
                 } else {
                     music.pic = "err";
                 }
-                
                 updateMinfo(music); // 更新音乐信息
-                
                 callback(music);    // 回调函数
                 return true;
             },   //success

@@ -4,7 +4,6 @@ function DataSaver() {
 }
 
 DataSaver.prototype = {
-
     // 播放器本地存储信息
     // 参数：键值、数据
     playerSavedata: function (key, data) {
