@@ -56,7 +56,7 @@ function pause() {
             playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
             
             // 正在播放 列表项已发生变更，进行保存
-            playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+            rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
             
             listClick(0);
         }
@@ -206,7 +206,6 @@ function listClick(no) {
         // 获取选定歌曲的信息
         var tmpMusic = musicList[0].item[no];
         
-        
         // 查找当前的播放列表中是否已经存在这首歌
         for(var i=0; i<playingMusicList.item.length; i++) {
             if(playingMusicList.item[i].id == tmpMusic.id && playingMusicList.item[i].source == tmpMusic.source) {
@@ -215,14 +214,12 @@ function listClick(no) {
                 return true;    // 退出函数
             }
         }
-        
-        
         // 将点击的这项追加到正在播放的条目的下方
         playingMusicList.item.splice(rem.playid + 1, 0, tmpMusic);
         tmpid = rem.playid + 1;
         
         // 正在播放 列表项已发生变更，进行保存
-        playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+        rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
     } else {    // 普通列表
         // 与之前不是同一个列表了（在播放别的列表的歌曲）或者是首次播放
         if((rem.dislist !== rem.playlist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playlist === undefined) {
@@ -230,7 +227,7 @@ function listClick(no) {
             playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
             
             // 正在播放 列表项已发生变更，进行保存
-            playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+            rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
             
             // 刷新正在播放的列表的动画
             rem.sheetList.refreshSheet();     // 更改正在播放的列表的显示
@@ -263,7 +260,7 @@ function playList(id) {
     
     // 如果链接为空，则 ajax 获取数据后再播放
     if(playingMusicList.item[id].url === null || playingMusicList.item[id].url === "") {
-        ajaxUrl(playingMusicList.item[id], play);
+        rem.dataFetcher.ajaxUrl(playingMusicList.item[id], play);
     } else {
         play(playingMusicList.item[id]);
     }
@@ -314,8 +311,8 @@ function play(music) {
     
     rem.errCount = 0;   // 连续播放失败的歌曲数归零
     music_bar.goto(0);  // 进度条强制归零
-    changeCover(music);    // 更新封面展示
-    ajaxLyric(music, lyricCallback);     // ajax加载歌词
+    rem.coverManager.changeCover(music);    // 更新封面展示
+    rem.dataFetcher.ajaxLyric(music, lyricCallback);     // ajax加载歌词
     music_bar.lock(false);  // 取消进度条锁定
 }
 
@@ -344,7 +341,7 @@ function vBcallback(newVal) {
     
     if(newVal === 0) $(".btn-quiet").addClass("btn-state-quiet");
     
-    playerSavedata('volume', newVal); // 存储音量信息
+    rem.dataSaver.playerSavedata('volume', newVal); // 存储音量信息
 }
 
 // mk进度条插件

@@ -29,15 +29,19 @@ String.format = function() {
     return str;
 }
 
+var Utils = function(){
+
+}
+
 // 展现系统列表中任意首歌的歌曲信息
-function musicInfo(list, index) {
+Utils.musicInfo = function (list, index) {
     var music = musicList[list].item[index];
     var tempStr = '<span class="info-title">歌名：</span>' + music.name +
         '<br><span class="info-title">歌手：</span>' + music.artist +
         '<br><span class="info-title">专辑：</span>' + music.album;
 
     if (list == rem.playlist && index == rem.playid) {   // 当前正在播放这首歌，那么还可以顺便获取一下时长。。
-        tempStr += '<br><span class="info-title">时长：</span>' + formatTime(rem.audio[0].duration);
+        tempStr += '<br><span class="info-title">时长：</span>' + Utils.formatTime(rem.audio[0].duration);
     }
 
     tempStr += '<br><span class="info-title">操作：</span>' +
@@ -67,10 +71,9 @@ function musicInfo(list, index) {
     }
 }
 
-
 // 展现搜索弹窗
-function searchBox() {
-    var tmpHtml = '<form onSubmit="return searchSubmit()"><div id="search-area">' +
+Utils.searchBox = function () {
+    var tmpHtml = '<form onSubmit="return Utils.searchSubmit()"><div id="search-area">' +
         '    <div class="search-group">' +
         '        <input type="text" name="wd" id="search-wd" placeholder="搜索歌手、歌名、专辑" autofocus required>' +
         '        <button class="search-submit" type="submit">搜 索</button>' +
@@ -100,7 +103,7 @@ function searchBox() {
 }
 
 // 搜索提交
-function searchSubmit() {
+Utils.searchSubmit = function () {
     var wd = $("#search-wd").val();
     if (!wd) {
         layer.msg('搜索内容不能为空', { anim: 6, offset: 't' });
@@ -113,14 +116,14 @@ function searchSubmit() {
 
     rem.loadPage = 1;   // 已加载页数复位
     rem.wd = wd;    // 搜索词
-    ajaxSearch();   // 加载搜索结果
+    rem.dataFetcher.ajaxSearch();   // 加载搜索结果
     return false;
 }
 
 
 // 将时间格式化为 00:00 的格式
 // 参数：原始时间
-function formatTime(time) {
+Utils.formatTime = function (time) {
     var hour, minute, second;
     hour = String(parseInt(time / 3600, 10));
     if (hour.length == 1) hour = '0' + hour;
@@ -140,6 +143,6 @@ function formatTime(time) {
 
 // url编码
 // 输入参数：待编码的字符串
-function urlEncode(String) {
+Utils.urlEncode = function (String) {
     return encodeURIComponent(String).replace(/'/g, "%27").replace(/"/g, "%22");
 }

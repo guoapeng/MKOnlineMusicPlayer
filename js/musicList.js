@@ -186,9 +186,8 @@ function addHis(music) {
             }
         }
     }
-
     // 再放到第一位
     historyMusicList.item.unshift(music);
 
-    playerSavedata('his', historyMusicList.item);  // 保存播放历史列表
+    rem.dataSaver.playerSavedata('his', historyMusicList.item);  // 保存播放历史列表
 }

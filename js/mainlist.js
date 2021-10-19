@@ -31,7 +31,7 @@ MainList.prototype = {
     displayLoading: function () {
         this.appendContent(CONST.MSG_PLAYLIST_IS_LOADING);
     },
-    
+
     displayNodata: function () {
         this.appendContent(CONST.MSG_NOTHING_TO_LOAD);
     },
@@ -44,7 +44,7 @@ MainList.prototype = {
         this.listContainer.html('');
     },
 
-    appendContent: function(content) {
+    appendContent: function (content) {
         this.listContainer.append(content);
     },
 
@@ -53,7 +53,7 @@ MainList.prototype = {
         // 参数：编号、名字、歌手、专辑 
         this.appendContent(String.format(CONST.TEMPLATE_MAIN_LIST_ITEM, no - 1, no, album, auth, name));
     },
-    
+
     createListHeader: function () {
         // 向列表中加入列表头
         this.appendContent(CONST.PL_PLAYLIST_HEAD);
@@ -80,7 +80,7 @@ MainList.prototype = {
         // 小屏幕点击右侧小点查看歌曲详细信息
         this.listContainer.on("click", ".list-mobile-menu", function () {
             var num = parseInt($(this).parent().data("no"));
-            musicInfo(rem.dislist, num);
+            Utils.musicInfo(rem.dislist, num);
             return false;
         });
 
@@ -105,11 +105,11 @@ MainList.prototype = {
                     listClick(num);     // 调用列表点击处理函数
                     break;
                 case "download":    // 下载
-                    ajaxUrl(musicList[rem.dislist].item[num], download);
+                    rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.downloader.download);
                     break;
                 case "share":   // 分享
                     // ajax 请求数据
-                    ajaxUrl(musicList[rem.dislist].item[num], ajaxShare);
+                    rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.ajaxShare.ajaxShare);
                     break;
             }
             return true;
@@ -118,7 +118,7 @@ MainList.prototype = {
         this.listContainer.on("click", ".list-loadmore", function () {
             $(".list-loadmore").removeClass('list-loadmore');
             $(".list-loadmore").html('加载中...');
-            ajaxSearch();
+            rem.dataFetcher.ajaxSearch();
         });
     },
 
@@ -144,13 +144,13 @@ MainList.prototype = {
         // 调试信息输出
         if (mkPlayer.debug) {
             if (musicList[list].id) {
-                    console.log(String.format('加载播放列表 {0} - {1}\n' +
+                console.log(String.format('加载播放列表 {0} - {1}\n' +
                     'id: {2},\n' +
                     'name: "{1}",\n' +
                     'cover: "{3}",\n' +
                     'item: []', list, musicList[list].name, musicList[list].id, musicList[list].cover));
             } else {
-                console.log(String.format('加载播放列表 {0} - {1}',list, musicList[list].name));
+                console.log(String.format('加载播放列表 {0} - {1}', list, musicList[list].name));
             }
         }
 

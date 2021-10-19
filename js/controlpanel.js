@@ -9,7 +9,7 @@ ControlPanel.prototype = {
                 layer.msg('请先播放歌曲');
                 return false;
             }
-            musicInfo(rem.playlist, rem.playid);
+            Utils.musicInfo(rem.playlist, rem.playid);
         });
         // 播放、暂停按钮的处理
         $(".btn-play").click(function () {
@@ -43,7 +43,7 @@ ControlPanel.prototype = {
                 $(this).data("volume", oldVol); // 记录当前音量值
                 oldVol = 0;
             }
-            playerSavedata('volume', oldVol); // 存储音量信息
+            rem.dataSaver.playerSavedata('volume', oldVol); // 存储音量信息
             volume_bar.goto(oldVol);    // 刷新音量显示
             if (rem.audio[0] !== undefined) rem.audio[0].volume = oldVol;  // 应用音量
         });
@@ -55,7 +55,7 @@ ControlPanel.prototype = {
         music_bar = new mkpgb("#music-progress", 0, mBcallback);
         music_bar.lock(true);   // 未播放时锁定不让拖动
         // 初始化音量设定
-        var tmp_vol = playerReaddata('volume');
+        var tmp_vol = rem.dataSaver.playerReaddata('volume');
         tmp_vol = (tmp_vol != null) ? tmp_vol : (rem.isMobile ? 1 : mkPlayer.volume);
         if (tmp_vol < 0) tmp_vol = 0;    // 范围限定
         if (tmp_vol > 1) tmp_vol = 1;
@@ -139,21 +139,12 @@ ControlPanel.prototype = {
 
     // 下载正在播放的这首歌
     downloadThis: function (obj) {
-        ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], download);
+        rem.dataFetcher.ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], rem.downloader.download);
     },
 
     // 分享正在播放的这首歌
     shareThis: function (obj) {
-        ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], ajaxShare);
+        rem.dataFetcher.ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], rem.ajaxShare.ajaxShare);
     }
-
-}
-
-//TODO: remove it since it's not in use
-function initPlayerCover() {
-    // 图片加载失败处理
-    $('img').error(function () {
-        $(this).attr('src', 'images/player_cover.png');
-    });
 
 }

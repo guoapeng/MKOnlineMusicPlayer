@@ -31,7 +31,7 @@ SheetList.prototype = {
     // 歌单列表底部登陆条
     sheetBar: function () {
         var barHtml;
-        if (playerReaddata('uid')) {
+        if (rem.dataSaver.playerReaddata('uid')) {
             barHtml = String.format('已同步 {0} 的歌单 <span class="login-btn login-refresh">[刷新]</span> <span class="login-btn login-out">[退出]</span>', rem.uname );
         } else {
             barHtml = '我的歌单 <span class="login-btn login-in">[点击同步]</span>';
@@ -51,7 +51,7 @@ SheetList.prototype = {
             if (musicList[num].item.length === 0 && musicList[num].creatorID) {
                 layer.msg('列表读取中...', { icon: 16, shade: 0.01, time: 500 }); // 0代表加载的风格，支持0-2
                 // ajax加载数据
-                ajaxPlayList(musicList[num].id, num, rem.mainList.loadList);
+                rem.dataFetcher.ajaxPlayList(musicList[num].id, num, rem.mainList.loadList);
                 return true;
             }
             rem.mainList.loadList(num);
@@ -83,21 +83,21 @@ SheetList.prototype = {
                         return false;
                     }
                     layer.close(index);     // 关闭输入框
-                    ajaxUserList(val);
+                    rem.dateFetcher.ajaxUserList(val);
                 });
         });
 
         // 刷新用户列表
         this.listContainer.on("click", ".login-refresh", function () {
-            playerSavedata('ulist', '');
+            rem.dataSaver.playerSavedata('ulist', '');
             layer.msg('刷新歌单');
             that.clearUserlist();
         });
 
         // 退出登录
         this.listContainer.on("click", ".login-out", function () {
-            playerSavedata('uid', '');
-            playerSavedata('ulist', '');
+            rem.dataSaver.playerSavedata('uid', '');
+            rem.dataSaver.playerSavedata('ulist', '');
             layer.msg('已退出');
             that.clearUserlist();
         });
@@ -107,10 +107,10 @@ SheetList.prototype = {
     //初始化播放列表
     initList: function () {
         // 登陆过，那就读取出用户的歌单，并追加到系统歌单的后面
-        if (playerReaddata('uid')) {
-            rem.uid = playerReaddata('uid');
-            rem.uname = playerReaddata('uname');
-            var tmp_ulist = playerReaddata('ulist');    // 读取本地记录的用户歌单
+        if (rem.dataSaver.playerReaddata('uid')) {
+            rem.uid = rem.dataSaver.playerReaddata('uid');
+            rem.uname = rem.dataSaver.playerReaddata('uname');
+            var tmp_ulist = rem.dataSaver.playerReaddata('ulist');    // 读取本地记录的用户歌单
 
             if (tmp_ulist) musicList.push.apply(musicList, tmp_ulist);   // 追加到系统歌单的后面
         }
@@ -120,7 +120,7 @@ SheetList.prototype = {
 
             if (i == CONST.PLAYING_LIST_ID) {    // 正在播放列表
                 // 读取正在播放列表
-                var tmp_item = playerReaddata('playing');
+                var tmp_item = rem.dataSaver.playerReaddata('playing');
                 if (tmp_item) {  // 读取到了正在播放列表
                     playingMusicList.item = tmp_item;
                     mkPlayer.defaultlist = CONST.PLAYING_LIST_ID;   // 默认显示正在播放列表
@@ -128,7 +128,7 @@ SheetList.prototype = {
 
             } else if (i == CONST.PLAYED_HISTORY_LIST_ID) { // 历史记录列表
                 // 读取历史记录
-                var tmp_item = playerReaddata('his');
+                var tmp_item = rem.dataSaver.playerReaddata('his');
                 if (tmp_item) {
                     historyMusicList.item = tmp_item;
                 }
@@ -138,7 +138,7 @@ SheetList.prototype = {
                 musicList[i].item = [];
                 if (musicList[i].id) {   // 列表ID已定义
                     // ajax获取列表信息
-                    ajaxPlayList(musicList[i].id, i);
+                    rem.dataFetcher.ajaxPlayList(musicList[i].id, i);
                 } else {    // 列表 ID 未定义
                     if (!musicList[i].name) musicList[i].name = '未命名';
                 }
@@ -149,8 +149,8 @@ SheetList.prototype = {
         }
 
         // 登陆了，但歌单又没有，说明是在刷新歌单
-        if (playerReaddata('uid') && !tmp_ulist) {
-            ajaxUserList(rem.uid);
+        if (rem.dataSaver.playerReaddata('uid') && !tmp_ulist) {
+            rem.dateFetcher.ajaxUserList(rem.uid);
             return true;
         }
 
@@ -191,10 +191,10 @@ SheetList.prototype = {
     clearDislist: function () {
         musicList[rem.dislist].item.length = 0;  // 清空内容
         if (rem.dislist == CONST.PLAYING_LIST_ID) {  // 正在播放列表
-            playerSavedata('playing', '');  // 清空本地记录
+            rem.dataSaver.playerSavedata('playing', '');  // 清空本地记录
             $(".sheet-item[data-no='1'] .sheet-cover").attr('src', 'images/player_cover.png');    // 恢复正在播放的封面
         } else if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID) {   // 播放记录
-            playerSavedata('his', '');  // 清空本地记录
+            rem.dataSaver.playerSavedata('his', '');  // 清空本地记录
         }
         layer.msg('列表已被清空');
         rem.controlPanel.dataBox("sheet");  // 在主界面显示出音乐专辑

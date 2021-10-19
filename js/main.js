@@ -17,6 +17,11 @@ $(function () {
 
     rem.mainList = new MainList(rem.isMobile);
     rem.mainList.init();
+    rem.downloader = new Downloader();
+    rem.dataSaver = new DataSaver();
+    rem.coverManager = new CoverManager();
+    rem.ajaxShare = new AjaxShare();
+    rem.dataFetcher = new DataFetcher();
     
     rem.sheetList = new SheetList(rem.isMobile);
     
