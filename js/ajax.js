@@ -204,9 +204,10 @@ DataFetcher.prototype = {
         
         $.ajax({
             type: mkPlayer.method, 
-            url: mkPlayer.api, 
-            data: "types=playlist&id=" + lid,
-            dataType : "jsonp",
+            url: "playlist/"+lid+".json",
+            //data: "types=playlist&id=" + lid,
+            data:{},
+            datatype : "json",
             complete: function(XMLHttpRequest, textStatus) {
                 musicList[id].isloading = false;    // 列表已经加载完了
             },  // complete
