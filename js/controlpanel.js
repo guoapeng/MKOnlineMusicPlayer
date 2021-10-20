@@ -3,7 +3,11 @@ function ControlPanel() {
 
 ControlPanel.prototype = {
     initialize: function () {
-        that = this;
+        _controlPanel = this;
+        window.addEventListener("adjusttime", function(e){
+            _controlPanel.mBcallback(e.adjustToTime);
+        });
+
         $("#music-info").on("click", function () {
             if (rem.playid === undefined) {
                 layer.msg('请先播放歌曲');
@@ -13,20 +17,20 @@ ControlPanel.prototype = {
         });
         // 播放、暂停按钮的处理
         $(".btn-play").on("click", function () {
-            that.pause();
+            _controlPanel.pause();
         });
         // 循环顺序的处理
         $(".btn-order").on("click", function () {
-            that.orderChange();
+            _controlPanel.orderChange();
         });
         // 上一首歌
         $(".btn-prev").on("click", function () {
-            that.prevMusic();
+            _controlPanel.prevMusic();
         });
 
         // 下一首
         $(".btn-next").on("click", function () {
-            that.nextMusic();
+            _controlPanel.nextMusic();
         });
 
         // 静音按钮点击事件
@@ -66,7 +70,7 @@ ControlPanel.prototype = {
     // 下面是进度条处理
     initProgress: function () {
         // 初始化播放进度条
-        music_bar = new mkpgb("#music-progress", 0, this.mBcallback);
+        music_bar = new mkpgb("#music-progress", 0);
         music_bar.lock(true);   // 未播放时锁定不让拖动
         // 初始化音量设定
         var tmp_vol = rem.dataSaver.playerReaddata('volume');
@@ -92,11 +96,11 @@ ControlPanel.prototype = {
         // 应用初始音量
         rem.audio[0].volume = volume_bar.percent;
         // 绑定歌曲进度变化事件
-        rem.audio[0].addEventListener('timeupdate', this.updateProgress);   // 更新进度
-        rem.audio[0].addEventListener('play', this.audioPlay); // 开始播放了
-        rem.audio[0].addEventListener('pause', this.audioPause);   // 暂停
-        $(rem.audio[0]).on('ended', this.autoNextMusic);   // 播放结束
-        rem.audio[0].addEventListener('error', this.audioErr);   // 播放器错误处理
+        rem.audio[0].addEventListener('timeupdate', this.updateProgress.bind(this));   // 更新进度
+        rem.audio[0].addEventListener('play', this.audioPlay.bind(this)); // 开始播放了
+        rem.audio[0].addEventListener('pause', this.audioPause.bind(this));   // 暂停
+        $(rem.audio[0]).on('ended', this.autoNextMusic.bind(this));   // 播放结束
+        rem.audio[0].addEventListener('error', this.audioErr.bind(this));   // 播放器错误处理
     },
 
     initBg: function () {
@@ -361,7 +365,7 @@ ControlPanel.prototype = {
             }
             rem.audio[0].play();
         }
-    }
+    },
 
     // 音频错误处理函数
     audioErr: function () {

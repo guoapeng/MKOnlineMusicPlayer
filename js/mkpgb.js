@@ -1,10 +1,9 @@
 
 // mk进度条插件
 // 进度条框 id，初始量，回调函数
-mkpgb = function(bar, percent, callback){  
+mkpgb = function(bar, percent){  
     this.bar = bar;
     this.percent = percent;
-    this.callback = callback;
     this.locked = false;
     this.init();  
 };
@@ -51,7 +50,9 @@ mkpgb.prototype = {
             }else{  
                 percent = (e.clientX - mk.minLength) / (mk.maxLength - mk.minLength);
             }
-            mk.callback(percent);
+            var adjustTimeEvent = new Event("adjusttime");
+            adjustTimeEvent.adjustToTime = percent
+            window.dispatchEvent(adjustTimeEvent)
             mk.goto(percent);
             return true;
         }

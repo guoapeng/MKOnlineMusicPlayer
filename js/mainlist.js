@@ -60,23 +60,23 @@ MainList.prototype = {
     },
 
     init: function () {
-        that = this;
+        _mainList = this;
         this.displayLoading(); // 列表加载中
         // 列表项双击播放
         this.listContainer.on("dblclick", ".list-item", function () {
             var num = parseInt($(this).data("no"));
             if (isNaN(num)) return false;
-            that.listClick(num);
-        });
+            this.listClick(num);
+        }.bind(this));
 
         // 移动端列表项单击播放
         this.listContainer.on("click", ".list-item", function () {
             if (this.isMobile) {
                 var num = parseInt($(this).data("no"));
                 if (isNaN(num)) return false;
-                that.listClick(num);
+                this.listClick(num);
             }
-        });
+        }.bind(this));
 
         // 小屏幕点击右侧小点查看歌曲详细信息
         this.listContainer.on("click", ".list-mobile-menu", function () {
@@ -103,7 +103,7 @@ MainList.prototype = {
             if (isNaN(num)) return false;
             switch ($(this).data("function")) {
                 case "play":    // 播放
-                    that.listClick(num);     // 调用列表点击处理函数
+                    _mainList.listClick(num);     // 调用列表点击处理函数
                     break;
                 case "download":    // 下载
                     rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.downloader.download);
