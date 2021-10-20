@@ -60,12 +60,13 @@ MainList.prototype = {
     },
 
     init: function () {
+        that = this;
         this.displayLoading(); // 列表加载中
         // 列表项双击播放
         this.listContainer.on("dblclick", ".list-item", function () {
             var num = parseInt($(this).data("no"));
             if (isNaN(num)) return false;
-            listClick(num);
+            that.listClick(num);
         });
 
         // 移动端列表项单击播放
@@ -73,7 +74,7 @@ MainList.prototype = {
             if (this.isMobile) {
                 var num = parseInt($(this).data("no"));
                 if (isNaN(num)) return false;
-                listClick(num);
+                that.listClick(num);
             }
         });
 
@@ -102,7 +103,7 @@ MainList.prototype = {
             if (isNaN(num)) return false;
             switch ($(this).data("function")) {
                 case "play":    // 播放
-                    listClick(num);     // 调用列表点击处理函数
+                    that.listClick(num);     // 调用列表点击处理函数
                     break;
                 case "download":    // 下载
                     rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.downloader.download);
@@ -178,11 +179,65 @@ MainList.prototype = {
             }
 
             if (rem.playlist === undefined) {    // 未曾播放过
-                if (mkPlayer.autoplay == true) pause();  // 设置了自动播放，则自动播放
+                if (mkPlayer.autoplay == true) rem.controlPanel.pause();  // 设置了自动播放，则自动播放
             } else {
                 rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
             }
             this.listToTop();    // 播放列表滚动到顶部
         }
+    },
+
+    // 显示的列表中的某一项点击后的处理函数
+    // 参数：歌曲在列表中的编号
+    listClick: function (no) {
+        // 记录要播放的歌曲的id
+        var tmpid = no;
+
+        // 调试信息输出
+        if (mkPlayer.debug) {
+            console.log("点播了列表中的第 " + (no + 1) + " 首歌 " + musicList[rem.dislist].item[no].name);
+        }
+
+        // 搜索列表的歌曲要额外处理
+        if (rem.dislist === CONST.SEARCH_RESULT_LIST_ID) {
+
+            // 没播放过
+            if (rem.playlist === undefined) {
+                rem.playlist = 1;   // 设置播放列表为 正在播放 列表
+                rem.playid = playingMusicList.item.length - 1;  // 临时设置正在播放的曲目为 正在播放 列表的最后一首
+            }
+
+            // 获取选定歌曲的信息
+            var tmpMusic = musicList[0].item[no];
+
+            // 查找当前的播放列表中是否已经存在这首歌
+            for (var i = 0; i < playingMusicList.item.length; i++) {
+                if (playingMusicList.item[i].id == tmpMusic.id && playingMusicList.item[i].source == tmpMusic.source) {
+                    tmpid = i;
+                    rem.controlPanel.playList(tmpid);    // 找到了直接播放
+                    return true;    // 退出函数
+                }
+            }
+            // 将点击的这项追加到正在播放的条目的下方
+            playingMusicList.item.splice(rem.playid + 1, 0, tmpMusic);
+            tmpid = rem.playid + 1;
+
+            // 正在播放 列表项已发生变更，进行保存
+            rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+        } else {    // 普通列表
+            // 与之前不是同一个列表了（在播放别的列表的歌曲）或者是首次播放
+            if ((rem.dislist !== rem.playlist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playlist === undefined) {
+                rem.playlist = rem.dislist;     // 记录正在播放的列表
+                playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+                // 正在播放 列表项已发生变更，进行保存
+                rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+
+                // 刷新正在播放的列表的动画
+                rem.sheetList.refreshSheet();     // 更改正在播放的列表的显示
+            }
+        }
+        rem.controlPanel.playList(tmpid);
+        return true;
     }
+
 }

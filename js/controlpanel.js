@@ -13,7 +13,7 @@ ControlPanel.prototype = {
         });
         // 播放、暂停按钮的处理
         $(".btn-play").on("click", function () {
-            pause();
+            that.pause();
         });
         // 循环顺序的处理
         $(".btn-order").on("click", function () {
@@ -21,7 +21,7 @@ ControlPanel.prototype = {
         });
         // 上一首歌
         $(".btn-prev").on("click", function () {
-            prevMusic();
+            that.prevMusic();
         });
 
         // 下一首
@@ -47,11 +47,26 @@ ControlPanel.prototype = {
             if (rem.audio[0] !== undefined) rem.audio[0].volume = oldVol;  // 应用音量
         });
     },
+    // 音量条变动回调函数
+    // 参数：新的值
+    vBcallback: function (newVal) {
+        if (rem.audio[0] !== undefined) {   // 音频对象已加载则立即改变音量
+            rem.audio[0].volume = newVal;
+        }
+
+        if ($(".btn-quiet").is('.btn-state-quiet')) {
+            $(".btn-quiet").removeClass("btn-state-quiet");     // 取消静音
+        }
+
+        if (newVal === 0) $(".btn-quiet").addClass("btn-state-quiet");
+
+        rem.dataSaver.playerSavedata('volume', newVal); // 存储音量信息
+    },
 
     // 下面是进度条处理
     initProgress: function () {
         // 初始化播放进度条
-        music_bar = new mkpgb("#music-progress", 0, mBcallback);
+        music_bar = new mkpgb("#music-progress", 0, this.mBcallback);
         music_bar.lock(true);   // 未播放时锁定不让拖动
         // 初始化音量设定
         var tmp_vol = rem.dataSaver.playerReaddata('volume');
@@ -59,8 +74,17 @@ ControlPanel.prototype = {
         if (tmp_vol < 0) tmp_vol = 0;    // 范围限定
         if (tmp_vol > 1) tmp_vol = 1;
         if (tmp_vol == 0) $(".btn-quiet").addClass("btn-state-quiet"); // 添加静音样式
-        volume_bar = new mkpgb("#volume-progress", tmp_vol, vBcallback);
+        volume_bar = new mkpgb("#volume-progress", tmp_vol, this.vBcallback);
     },
+
+    // 音乐进度条拖动回调函数
+    mBcallback: function (newVal) {
+        var newTime = rem.audio[0].duration * newVal;
+        // 应用新的进度
+        rem.audio[0].currentTime = newTime;
+        refreshLyric(newTime);  // 强制滚动歌词到当前进度
+    },
+
 
     // 初始化 Audio
     initAudio: function () {
@@ -150,9 +174,19 @@ ControlPanel.prototype = {
             clearInterval(rem.titflash);
         }
         // 标题滚动
-        titleFlash(msg);
+        this.titleFlash(msg);
     },
 
+    // 标题滚动
+    titleFlash: function (msg) {
+        // 截取字符
+        var tit = function () {
+            msg = msg.substring(1, msg.length) + msg.substring(0, 1);
+            document.title = msg;
+        };
+        // 设置定时间 300ms滚动
+        rem.titflash = setInterval(function () { tit() }, 300);
+    },
     // 循环顺序
     orderChange: function () {
         var orderDiv = $(".btn-order");
@@ -220,7 +254,7 @@ ControlPanel.prototype = {
     playList: function (id) {
         // 第一次播放
         if (rem.playlist === undefined) {
-            pause();
+            this.pause();
             return true;
         }
         // 没有歌曲，跳出
@@ -308,6 +342,27 @@ ControlPanel.prototype = {
         rem.dataFetcher.ajaxLyric(music, lyricCallback);     // ajax加载歌词
         music_bar.lock(false);  // 取消进度条锁定
     },
+
+    // 点击暂停按钮的事件
+    pause: function () {
+        if (rem.paused === false) {  // 之前是播放状态
+            rem.audio[0].pause();  // 暂停
+        } else {
+            // 第一次点播放
+            if (rem.playlist === undefined) {
+                rem.playlist = rem.dislist;
+
+                playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+
+                // 正在播放 列表项已发生变更，进行保存
+                rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+
+                rem.mainList.listClick(0);
+            }
+            rem.audio[0].play();
+        }
+    }
+
     // 音频错误处理函数
     audioErr: function () {
         // 没播放过，直接跳过
@@ -322,6 +377,12 @@ ControlPanel.prototype = {
             rem.controlPanel.nextMusic();    // 切换下一首歌
         }
     },
+
+    // 播放上一首歌
+    prevMusic: function () {
+        this.playList(rem.playid - 1);
+    },
+
     // 下载正在播放的这首歌
     downloadThis: function (obj) {
         rem.dataFetcher.ajaxUrl(musicList[$(obj).data("list")].item[$(obj).data("index")], rem.downloader.download);
