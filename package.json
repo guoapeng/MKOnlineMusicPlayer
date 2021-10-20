@@ -1,0 +1,28 @@
+{
+  "name": "musicplayer",
+  "version": "0.1.0",
+  "description": "a music player",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@192.168.200.2:root/mkonlinemusicplayer.git"
+  },
+  "keywords": [
+    "music",
+    "player",
+    "media",
+    "mp3",
+    "lyric"
+  ],
+  "author": "eagle.guo",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^13.0.2"
+  },
+  "dependencies": {
+    "jquery": "^3.6.0"
+  }
+}
