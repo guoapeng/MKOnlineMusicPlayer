@@ -27,7 +27,7 @@ $(function () {
     rem.sheetList = new SheetList(rem.isMobile);
     
     rem.sheetList.initializeMusicSheet();
-    rem.controlPanel.initializeControlPanel();
+    rem.controlPanel.initialize();
     rem.controlPanel.initBg();
     // 初始化播放列表
     rem.sheetList.initList();
