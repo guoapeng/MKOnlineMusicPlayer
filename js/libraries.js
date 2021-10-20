@@ -114,9 +114,9 @@ Utils.searchSubmit = function () {
 
     layer.closeAll('page');     // 关闭搜索框
 
-    rem.loadPage = 1;   // 已加载页数复位
     rem.wd = wd;    // 搜索词
-    rem.dataFetcher.ajaxSearch();   // 加载搜索结果
+    rem.dataFetcher.resetFetcher();// 已加载页数复位
+    rem.dataFetcher.ajaxSearch(rem.wd);   // 加载搜索结果
     return false;
 }
 

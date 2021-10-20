@@ -7,24 +7,28 @@
 
 // ajax加载搜索结果
 var DataFetcher = function (){
-
 }
 
 DataFetcher.prototype = {
-    ajaxSearch: function () {
-        if(rem.wd === ""){
+    loadPage: 1, //搜索功能已加载的页码
+    resetFetcher: function(){
+        this.loadPage = 1;
+    },
+
+    ajaxSearch: function (keyword) {
+        if(keyword === ""){
             layer.msg('搜索内容不能为空', {anim:6});
             return false;
         }
         
-        if(rem.loadPage == 1) { // 弹出搜索提示
+        if(this.loadPage == 1) { // 弹出搜索提示
             var tmpLoading = layer.msg('搜索中', {icon: 16,shade: 0.01});
         }
         
         $.ajax({
             type: mkPlayer.method, 
-            url: mkPlayer.api, 
-            data: "types=search&count=" + mkPlayer.loadcount + "&source=" + rem.source + "&pages=" + rem.loadPage + "&name=" + rem.wd,
+            url: "search/"+rem.source+"/"+keyword, 
+            //data: "types=search&count=" + mkPlayer.loadcount + "&source=" + rem.source + "&pages=" + this.loadPage + "&name=" + keyword,
             dataType : "jsonp",
             complete: function(XMLHttpRequest, textStatus) {
                 if(tmpLoading) layer.close(tmpLoading);    // 关闭加载中动画
@@ -35,7 +39,7 @@ DataFetcher.prototype = {
                     console.debug("搜索结果数：" + jsonData.length);
                 }
                 
-                if(rem.loadPage == 1)   // 加载第一页，清空列表
+                if(this.loadPage == 1)   // 加载第一页，清空列表
                 {
                     if(jsonData.length === 0)   // 返回结果为零
                     {
@@ -76,7 +80,7 @@ DataFetcher.prototype = {
                 }
                 
                 rem.dislist = CONST.SEARCH_RESULT_LIST_ID;    // 当前显示的是搜索列表
-                rem.loadPage ++;    // 已加载的列数+1
+                this.loadPage ++;    // 已加载的列数+1
                 
                 rem.controlPanel.dataBox("list");    // 在主界面显示出播放列表
                 rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
@@ -87,7 +91,7 @@ DataFetcher.prototype = {
                     rem.mainList.displayMore();  // 还可以点击加载更多
                 }
                 
-                if(rem.loadPage == 2) rem.mainList.listToTop();    // 播放列表滚动到顶部
+                if(this.loadPage == 2) rem.mainList.listToTop();    // 播放列表滚动到顶部
             },   //success
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 layer.msg('搜索结果获取失败 - ' + XMLHttpRequest.status);
