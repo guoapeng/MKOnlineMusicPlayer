@@ -44,9 +44,11 @@ $(function () {
     rem.errCount = 0;        
     rem.dataSaver = new DataSaver();        // 连续播放失败的歌曲数归零
     rem.controlPanel = new ControlPanel();
-    rem.controlPanel.initProgress();        // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
+    rem.controlPanel.initProgressAndVolBar();        // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
     rem.controlPanel.initAudio();           // 初始化 audio 标签，事件绑定
-
+    rem.controlPanel.initialize();
+    rem.controlPanel.initBg();
+    
     rem.mainList = new MainList(rem.isMobile);
     rem.mainList.init();
     rem.downloader = new Downloader();
@@ -58,8 +60,7 @@ $(function () {
     rem.sheetList = new SheetList(rem.isMobile);
     
     rem.sheetList.initializeMusicSheet();
-    rem.controlPanel.initialize();
-    rem.controlPanel.initBg();
+
     // 初始化播放列表
     rem.sheetList.initList();
 });

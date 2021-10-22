@@ -51,6 +51,7 @@ MKOnlineMusicPlayer 是一款全屏的音乐播放器 UI 框架（为避免侵�
 | rem.isMobile | 是否是手机浏览 |
 
 ### 致谢
+
 -----
 #### 特别感谢 `@metowolf`、`网易云音乐`、`QQ音乐`、`虾米`、`酷狗`、`百度音乐`
 

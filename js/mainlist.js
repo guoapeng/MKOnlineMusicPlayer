@@ -223,14 +223,14 @@ MainList.prototype = {
             tmpid = rem.playid + 1;
 
             // 正在播放 列表项已发生变更，进行保存
-            rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+            rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
         } else {    // 普通列表
             // 与之前不是同一个列表了（在播放别的列表的歌曲）或者是首次播放
             if ((rem.dislist !== rem.playlist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playlist === undefined) {
                 rem.playlist = rem.dislist;     // 记录正在播放的列表
                 playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
                 // 正在播放 列表项已发生变更，进行保存
-                rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+                rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
 
                 // 刷新正在播放的列表的动画
                 rem.sheetList.refreshSheet();     // 更改正在播放的列表的显示

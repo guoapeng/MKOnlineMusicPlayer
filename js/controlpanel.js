@@ -3,11 +3,17 @@ function ControlPanel() {
 
 ControlPanel.prototype = {
     initialize: function () {
+
         _controlPanel = this;
-        window.addEventListener("adjusttime", function(e){
+
+        window.addEventListener("mb-adjusttime", function(e){
             _controlPanel.mBcallback(e.adjustToTime);
         });
 
+        window.addEventListener("vb-adjusttime", function(e){
+            _controlPanel.vBcallback(e.adjustToTime);
+        });
+        
         $("#music-info").on("click", function () {
             if (rem.playid === undefined) {
                 layer.msg('请先播放歌曲');
@@ -46,7 +52,7 @@ ControlPanel.prototype = {
                 $(this).data("volume", oldVol); // 记录当前音量值
                 oldVol = 0;
             }
-            rem.dataSaver.playerSavedata('volume', oldVol); // 存储音量信息
+            rem.dataSaver.savedata('volume', oldVol); // 存储音量信息
             volume_bar.goto(oldVol);    // 刷新音量显示
             if (rem.audio[0] !== undefined) rem.audio[0].volume = oldVol;  // 应用音量
         });
@@ -64,21 +70,18 @@ ControlPanel.prototype = {
 
         if (newVal === 0) $(".btn-quiet").addClass("btn-state-quiet");
 
-        rem.dataSaver.playerSavedata('volume', newVal); // 存储音量信息
+        rem.dataSaver.savedata('volume', newVal); // 存储音量信息
     },
 
     // 下面是进度条处理
-    initProgress: function () {
+    initProgressAndVolBar: function () {
         // 初始化播放进度条
-        music_bar = new mkpgb("#music-progress", 0);
-        music_bar.lock(true);   // 未播放时锁定不让拖动
+        music_bar = new mkpgb("#music-progress", 0, "mb", true); // 未播放时锁定不让拖动
         // 初始化音量设定
-        var tmp_vol = rem.dataSaver.playerReaddata('volume');
+        var tmp_vol = rem.dataSaver.readdata('volume');
         tmp_vol = (tmp_vol != null) ? tmp_vol : (rem.isMobile ? 1 : mkPlayer.volume);
-        if (tmp_vol < 0) tmp_vol = 0;    // 范围限定
-        if (tmp_vol > 1) tmp_vol = 1;
+        volume_bar = new mkpgb("#volume-progress", tmp_vol, "vb", false);
         if (tmp_vol == 0) $(".btn-quiet").addClass("btn-state-quiet"); // 添加静音样式
-        volume_bar = new mkpgb("#volume-progress", tmp_vol, this.vBcallback);
     },
 
     // 音乐进度条拖动回调函数
@@ -88,7 +91,6 @@ ControlPanel.prototype = {
         rem.audio[0].currentTime = newTime;
         refreshLyric(newTime);  // 强制滚动歌词到当前进度
     },
-
 
     // 初始化 Audio
     initAudio: function () {
@@ -359,7 +361,7 @@ ControlPanel.prototype = {
                 playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
 
                 // 正在播放 列表项已发生变更，进行保存
-                rem.dataSaver.playerSavedata('playing', playingMusicList.item);   // 保存正在播放列表
+                rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
 
                 rem.mainList.listClick(0);
             }
