@@ -5,6 +5,7 @@
  * 时间：2018-3-11
  *************************************************/
 // 播放器功能配置
+"use strict";
 var mkPlayer = {
     api: "api.php", // api地址
     loadcount: 20,  // 搜索结果一次加载多少条
@@ -17,7 +18,7 @@ var mkPlayer = {
     mdotshine: false,   // 是否开启[移动端]播放进度条的小点闪动效果[不支持IE](true/false)
     volume: 0.6,        // 默认音量值(0~1之间)
     version: "v2.41",    // 播放器当前版本号(仅供调试)
-    debug: false   // 是否开启调试模式(true/false)
+    debug: true   // 是否开启调试模式(true/false)
 };
 
 /*******************************************************
@@ -37,14 +38,17 @@ console.info('欢迎使用 MKOnlinePlayer!\n当前版本：'+mkPlayer.version+' 
 
 $(function () {
     if (mkPlayer.debug) {
-        console.warn('播放器调试模式已开启，正常使用时请在 js/player.js 中按说明关闭调试模式');
+        console.warn('播放器调试模式已开启，正常使用时请在 js/main.js 中按说明关闭调试模式');
     }
     rem.isMobile = device.isMobile();       // 判断是否是移动设备
     rem.webTitle = document.title;          // 记录页面原本的标题
     rem.errCount = 0;        
     rem.dataSaver = new DataSaver();        // 连续播放失败的歌曲数归零
     rem.controlPanel = new ControlPanel();
-    rem.controlPanel.initProgressAndVolBar();        // 初始化音量条、进度条（进度条初始化要在 Audio 前，别问我为什么……）
+    // 初始化播放进度条
+    var music_bar = new ProgressBar("#music-progress", 0, true); // 未播放时锁定不让拖动
+    var volume_bar = new VolumeBar("#volume-progress", false);
+
     rem.controlPanel.initAudio();           // 初始化 audio 标签，事件绑定
     rem.controlPanel.initialize();
     rem.controlPanel.initBg();

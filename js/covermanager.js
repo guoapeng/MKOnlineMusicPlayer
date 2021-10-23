@@ -1,4 +1,9 @@
 function CoverManager() {
+
+    window.addEventListener("mb-start-play", function(e){
+        this.changeCover(e.music);
+    }.bind(this));
+
 }
 
 CoverManager.prototype = {
@@ -9,7 +14,7 @@ CoverManager.prototype = {
         var animate = false, imgload = false;
 
         if (!img) {  // 封面为空
-            rem.dataFetcher.ajaxPic(music, rem.coverManager.changeCover);    // 获取歌曲封面图
+            rem.dataFetcher.ajaxPic(music, this.changeCover);    // 获取歌曲封面图
             img == "err";    // 暂时用无图像占个位...
         }
 

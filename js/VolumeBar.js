@@ -1,21 +1,25 @@
 
 // mk进度条插件
 // 进度条框 id，初始量，回调函数
-mkpgb = function (bar, percent, eventPrefix, isLocked) {
-    this.eventPrefix = eventPrefix;
+VolumeBar = function (bar, isLocked) {
+    this.eventPrefix = "vb";
     this.bar = bar;
-    if(percent >1 || percent<0) {
-        if (percent < 0) this.percent = 0;    // 范围限定
-        if (percent > 1) this.percent = 1;
+    // 初始化音量设定
+    var tmp_vol = rem.dataSaver.readdata('volume');
+    tmp_vol = (tmp_vol != null) ? tmp_vol : (rem.isMobile ? 1 : mkPlayer.volume);
+    if (tmp_vol > 1 || tmp_vol < 0) {
+        if (tmp_vol < 0) this.percent = 0;    // 范围限定
+        if (tmp_vol > 1) this.percent = 1;
     } else {
-        this.percent = percent;
+        this.percent = tmp_vol;
     }
     this.locked = isLocked;
     this.mdown = false;
     this.init();
+    if (this.percent == 0) $(".btn-quiet").addClass("btn-state-quiet"); // 添加静音样式
 };
 
-mkpgb.prototype = {
+VolumeBar.prototype = {
     // 进度条初始化
     init: function () {
         var mk = this;
@@ -48,7 +52,34 @@ mkpgb.prototype = {
         $("html").on("mouseup", function (e) {
             mk.mdown = false;
         });
-        
+
+        // 静音按钮点击事件
+        $(".btn-quiet").on("click", function () {
+            var oldVol;     // 之前的音量值
+            if ($(this).is('.btn-state-quiet')) {
+                oldVol = $(this).data("volume");
+                oldVol = oldVol ? oldVol : (rem.isMobile ? 1 : mkPlayer.volume);  // 没找到记录的音量，则重置为默认音量
+                $(this).removeClass("btn-state-quiet");     // 取消静音
+            } else {
+                oldVol = mk.percent;
+                $(this).addClass("btn-state-quiet");        // 开启静音
+                $(this).data("volume", oldVol); // 记录当前音量值
+                oldVol = 0;
+            }
+            rem.dataSaver.savedata('volume', oldVol); // 存储音量信息
+            mk.goto(oldVol);    // 刷新音量显示
+            var adjustTimeEvent = new Event("vb-adjusttime");
+            adjustTimeEvent.adjustToTime = oldVol
+            window.dispatchEvent(adjustTimeEvent)
+        });
+
+        window.addEventListener("query-volume", function (e) {
+            var volumeFeedbackEvent = new Event("feedback-current-volume");
+            volumeFeedbackEvent.currentVolume = mk.percent;
+            window.dispatchEvent(volumeFeedbackEvent)
+        });
+
+
         mk.goto(mk.percent);
 
         return true;
@@ -65,9 +96,9 @@ mkpgb.prototype = {
         } else {
             percent = (e.clientX - mk.minLength) / (mk.maxLength - mk.minLength);
         }
-        var adjustTimeEvent = new Event(mk.eventPrefix+"-adjusttime");
-            adjustTimeEvent.adjustToTime = percent
-            window.dispatchEvent(adjustTimeEvent)
+        var adjustTimeEvent = new Event("vb-adjusttime");
+        adjustTimeEvent.adjustToTime = percent
+        window.dispatchEvent(adjustTimeEvent)
 
         mk.goto(percent);
         return true;

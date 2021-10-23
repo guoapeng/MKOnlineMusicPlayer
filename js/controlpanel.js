@@ -39,23 +39,6 @@ ControlPanel.prototype = {
             _controlPanel.nextMusic();
         });
 
-        // 静音按钮点击事件
-        $(".btn-quiet").on("click", function () {
-            var oldVol;     // 之前的音量值
-            if ($(this).is('.btn-state-quiet')) {
-                oldVol = $(this).data("volume");
-                oldVol = oldVol ? oldVol : (rem.isMobile ? 1 : mkPlayer.volume);  // 没找到记录的音量，则重置为默认音量
-                $(this).removeClass("btn-state-quiet");     // 取消静音
-            } else {
-                oldVol = volume_bar.percent;
-                $(this).addClass("btn-state-quiet");        // 开启静音
-                $(this).data("volume", oldVol); // 记录当前音量值
-                oldVol = 0;
-            }
-            rem.dataSaver.savedata('volume', oldVol); // 存储音量信息
-            volume_bar.goto(oldVol);    // 刷新音量显示
-            if (rem.audio[0] !== undefined) rem.audio[0].volume = oldVol;  // 应用音量
-        });
     },
     // 音量条变动回调函数
     // 参数：新的值
@@ -73,20 +56,9 @@ ControlPanel.prototype = {
         rem.dataSaver.savedata('volume', newVal); // 存储音量信息
     },
 
-    // 下面是进度条处理
-    initProgressAndVolBar: function () {
-        // 初始化播放进度条
-        music_bar = new mkpgb("#music-progress", 0, "mb", true); // 未播放时锁定不让拖动
-        // 初始化音量设定
-        var tmp_vol = rem.dataSaver.readdata('volume');
-        tmp_vol = (tmp_vol != null) ? tmp_vol : (rem.isMobile ? 1 : mkPlayer.volume);
-        volume_bar = new mkpgb("#volume-progress", tmp_vol, "vb", false);
-        if (tmp_vol == 0) $(".btn-quiet").addClass("btn-state-quiet"); // 添加静音样式
-    },
-
     // 音乐进度条拖动回调函数
     mBcallback: function (newVal) {
-        var newTime = rem.audio[0].duration * newVal;
+        var newTime = (rem.audio[0].duration * newVal).toFixed(4);
         // 应用新的进度
         rem.audio[0].currentTime = newTime;
         refreshLyric(newTime);  // 强制滚动歌词到当前进度
@@ -96,7 +68,15 @@ ControlPanel.prototype = {
     initAudio: function () {
         rem.audio = $('<audio></audio>').appendTo('body');
         // 应用初始音量
-        rem.audio[0].volume = volume_bar.percent;
+        rem.audio[0].volume = 0;
+
+        window.addEventListener("feedback-current-volume", function(e) {
+            rem.audio[0].volume = e.currentVolume;
+        });
+
+        var queryVolumeEvent = new Event("query-volume");
+        window.dispatchEvent(queryVolumeEvent)
+      
         // 绑定歌曲进度变化事件
         rem.audio[0].addEventListener('timeupdate', this.updateProgress.bind(this));   // 更新进度
         rem.audio[0].addEventListener('play', this.audioPlay.bind(this)); // 开始播放了
@@ -106,7 +86,6 @@ ControlPanel.prototype = {
     },
 
     initBg: function () {
-
         if ((mkPlayer.coverbg === true && !rem.isMobile) || (mkPlayer.mcoverbg === true && rem.isMobile)) { // 开启了封面背景
             if (rem.isMobile) {  // 移动端采用另一种模糊方案
                 $('#blur-img').html('<div class="blured-img" id="mobile-blur"></div><div class="blur-mask mobile-mask"></div>');
@@ -249,8 +228,10 @@ ControlPanel.prototype = {
     updateProgress: function () {
         // 暂停状态不管
         if (rem.paused !== false) return true;
-        // 同步进度条
-        music_bar.goto(rem.audio[0].currentTime / rem.audio[0].duration);
+        // 同步进度条1112345678910
+        var progressUpdateEvent = new Event("mb-progress-update");
+        progressUpdateEvent.percent = rem.audio[0].currentTime / rem.audio[0].duration
+        window.dispatchEvent(progressUpdateEvent)
         // 同步歌词显示	
         scrollLyric(rem.audio[0].currentTime);
     },
@@ -275,7 +256,7 @@ ControlPanel.prototype = {
 
         // 如果链接为空，则 ajax 获取数据后再播放
         if (playingMusicList.item[id].url === null || playingMusicList.item[id].url === "") {
-            rem.dataFetcher.ajaxUrl(playingMusicList.item[id], play);
+            rem.dataFetcher.ajaxUrl(playingMusicList.item[id], this.play);
         } else {
             this.play(playingMusicList.item[id]);
         }
@@ -343,10 +324,10 @@ ControlPanel.prototype = {
         }
 
         rem.errCount = 0;   // 连续播放失败的歌曲数归零
-        music_bar.goto(0);  // 进度条强制归零
-        rem.coverManager.changeCover(music);    // 更新封面展示
+        var startPlayEvent = new Event("mb-start-play");
+        startPlayEvent.music = music;
+        window.dispatchEvent(startPlayEvent)
         rem.dataFetcher.ajaxLyric(music, lyricCallback);     // ajax加载歌词
-        music_bar.lock(false);  // 取消进度条锁定
     },
 
     // 点击暂停按钮的事件
