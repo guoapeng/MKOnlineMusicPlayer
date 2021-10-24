@@ -9,12 +9,11 @@ function AudioPlayer() {
         vp.audio[0].volume = e.currentVolume;
     });
 
-    window.addEventListener("mb-start-play", function(e){
+    window.addEventListener("playAudio", function(e){
         try {
             this.getAudio().pause();
             this.setSource(e.music.url);
             this.getAudio().play();
-            
             this.getAudio().oncanplay = function () {
                 e.music.duration = this.getAudio().duration;
             }.bind(this);

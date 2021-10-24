@@ -6,8 +6,8 @@ ControlPanel.prototype = {
 
         _controlPanel = this;
 
-        window.addEventListener("mb-adjusttime", function (e) {
-            _controlPanel.mBcallback(e.adjustToTime);
+        window.addEventListener("adjusttimeByPercent", function (e) {
+            _controlPanel.mBcallback(e.percent);
         });
 
         window.addEventListener("vb-adjusttime", function (e) {
@@ -293,7 +293,7 @@ ControlPanel.prototype = {
         }
 
         rem.errCount = 0;   // 连续播放失败的歌曲数归零
-        var startPlayEvent = new Event("mb-start-play");
+        var startPlayEvent = new Event("playAudio");
         startPlayEvent.music = music;
         window.dispatchEvent(startPlayEvent)
         rem.dataFetcher.ajaxLyric(music, lyricCallback);     // ajax加载歌词

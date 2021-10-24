@@ -1,6 +1,6 @@
 function CoverManager() {
 
-    window.addEventListener("mb-start-play", function(e){
+    window.addEventListener("playAudio", function(e){
         this.changeCover(e.music);
     }.bind(this));
 
