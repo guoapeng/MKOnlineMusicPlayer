@@ -6,14 +6,14 @@ ControlPanel.prototype = {
 
         _controlPanel = this;
 
-        window.addEventListener("mb-adjusttime", function(e){
+        window.addEventListener("mb-adjusttime", function (e) {
             _controlPanel.mBcallback(e.adjustToTime);
         });
 
-        window.addEventListener("vb-adjusttime", function(e){
+        window.addEventListener("vb-adjusttime", function (e) {
             _controlPanel.vBcallback(e.adjustToTime);
         });
-        
+
         $("#music-info").on("click", function () {
             if (rem.playid === undefined) {
                 layer.msg('请先播放歌曲');
@@ -43,9 +43,8 @@ ControlPanel.prototype = {
     // 音量条变动回调函数
     // 参数：新的值
     vBcallback: function (newVal) {
-        if (rem.audio[0] !== undefined) {   // 音频对象已加载则立即改变音量
-            rem.audio[0].volume = newVal;
-        }
+
+        rem.audioPlayer.setVolume(newVal); // 音频对象已加载则立即改变音量
 
         if ($(".btn-quiet").is('.btn-state-quiet')) {
             $(".btn-quiet").removeClass("btn-state-quiet");     // 取消静音
@@ -58,31 +57,10 @@ ControlPanel.prototype = {
 
     // 音乐进度条拖动回调函数
     mBcallback: function (newVal) {
-        var newTime = (rem.audio[0].duration * newVal).toFixed(4);
+        var newTime = (rem.audioPlayer.getAudio().duration * newVal).toFixed(4);
         // 应用新的进度
-        rem.audio[0].currentTime = newTime;
+        rem.audioPlayer.setTime(newTime);
         refreshLyric(newTime);  // 强制滚动歌词到当前进度
-    },
-
-    // 初始化 Audio
-    initAudio: function () {
-        rem.audio = $('<audio></audio>').appendTo('body');
-        // 应用初始音量
-        rem.audio[0].volume = 0;
-
-        window.addEventListener("feedback-current-volume", function(e) {
-            rem.audio[0].volume = e.currentVolume;
-        });
-
-        var queryVolumeEvent = new Event("query-volume");
-        window.dispatchEvent(queryVolumeEvent)
-      
-        // 绑定歌曲进度变化事件
-        rem.audio[0].addEventListener('timeupdate', this.updateProgress.bind(this));   // 更新进度
-        rem.audio[0].addEventListener('play', this.audioPlay.bind(this)); // 开始播放了
-        rem.audio[0].addEventListener('pause', this.audioPause.bind(this));   // 暂停
-        $(rem.audio[0]).on('ended', this.autoNextMusic.bind(this));   // 播放结束
-        rem.audio[0].addEventListener('error', this.audioErr.bind(this));   // 播放器错误处理
     },
 
     initBg: function () {
@@ -230,10 +208,10 @@ ControlPanel.prototype = {
         if (rem.paused !== false) return true;
         // 同步进度条1112345678910
         var progressUpdateEvent = new Event("mb-progress-update");
-        progressUpdateEvent.percent = rem.audio[0].currentTime / rem.audio[0].duration
+        progressUpdateEvent.percent = rem.audioPlayer.getProgress();
         window.dispatchEvent(progressUpdateEvent)
         // 同步歌词显示	
-        scrollLyric(rem.audio[0].currentTime);
+        scrollLyric(rem.audioPlayer.getAudio().currentTime);
     },
 
     // 播放正在播放列表中的歌曲
@@ -314,15 +292,6 @@ ControlPanel.prototype = {
             rem.sheetList.refreshList();  // 更新列表显示
         }
 
-        try {
-            rem.audio[0].pause();
-            rem.audio.attr('src', music.url);
-            rem.audio[0].play();
-        } catch (e) {
-            this.audioErr(); // 调用错误处理函数
-            return;
-        }
-
         rem.errCount = 0;   // 连续播放失败的歌曲数归零
         var startPlayEvent = new Event("mb-start-play");
         startPlayEvent.music = music;
@@ -333,7 +302,7 @@ ControlPanel.prototype = {
     // 点击暂停按钮的事件
     pause: function () {
         if (rem.paused === false) {  // 之前是播放状态
-            rem.audio[0].pause();  // 暂停
+            rem.audioPlayer.getAudio().pause();  // 暂停
         } else {
             // 第一次点播放
             if (rem.playlist === undefined) {
@@ -346,7 +315,7 @@ ControlPanel.prototype = {
 
                 rem.mainList.listClick(0);
             }
-            rem.audio[0].play();
+            rem.audioPlayer.getAudio().play();
         }
     },
 

@@ -46,10 +46,9 @@ $(function () {
     rem.dataSaver = new DataSaver();        // 连续播放失败的歌曲数归零
     rem.controlPanel = new ControlPanel();
     // 初始化播放进度条
-    var music_bar = new ProgressBar("#music-progress", 0, true); // 未播放时锁定不让拖动
-    var volume_bar = new VolumeBar("#volume-progress", false);
-
-    rem.controlPanel.initAudio();           // 初始化 audio 标签，事件绑定
+    new ProgressBar("#music-progress", 0, true); // 未播放时锁定不让拖动
+    new VolumeBar("#volume-progress", false);
+    rem.audioPlayer =  new AudioPlayer(); // 初始化 audio 标签，事件绑定
     rem.controlPanel.initialize();
     rem.controlPanel.initBg();
     

@@ -41,7 +41,7 @@ Utils.musicInfo = function (list, index) {
         '<br><span class="info-title">专辑：</span>' + music.album;
 
     if (list == rem.playlist && index == rem.playid) {   // 当前正在播放这首歌，那么还可以顺便获取一下时长。。
-        tempStr += '<br><span class="info-title">时长：</span>' + Utils.formatTime(rem.audio[0].duration);
+        tempStr += '<br><span class="info-title">时长：</span>' + Utils.formatTime(music.duration);
     }
 
     tempStr += '<br><span class="info-title">操作：</span>' +
