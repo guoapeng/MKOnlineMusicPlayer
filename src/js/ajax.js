@@ -5,7 +5,8 @@
  * 时间：2018-3-11
  *************************************************/
 // ajax加载搜索结果
-var DataFetcher = function () {
+var DataFetcher = function (dataSaver) {
+    this.dataSaver = dataSaver;
 }
 
 DataFetcher.prototype = {
@@ -46,14 +47,14 @@ DataFetcher.prototype = {
                         return false;
                     }
                     musicList[0].item = [];
-                    rem.mainList.html('');   // 清空列表中原有的元素
-                    rem.mainList.createListHeader();      // 加载列表头
+                    rem.playList.html('');   // 清空列表中原有的元素
+                    rem.playList.createListHeader();      // 加载列表头
                 } else {
                     $("#list-foot").remove();     //已经是加载后面的页码了，删除之前的“加载更多”提示
                 }
 
                 if (jsonData.length === 0) {
-                    rem.mainList.displayNomore(); // 加载完了
+                    rem.playList.displayNomore(); // 加载完了
                     return false;
                 }
 
@@ -74,7 +75,7 @@ DataFetcher.prototype = {
                         url: null   // mp3链接
                     };
                     musicList[0].item.push(tempItem);   // 保存到搜索结果临时列表中
-                    rem.mainList.addItem(no, tempItem.name, tempItem.artist, tempItem.album);  // 在前端显示
+                    rem.playList.addItem(no, tempItem.name, tempItem.artist, tempItem.album);  // 在前端显示
                 }
 
                 rem.dislist = CONST.SEARCH_RESULT_LIST_ID;    // 当前显示的是搜索列表
@@ -84,12 +85,12 @@ DataFetcher.prototype = {
                 rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
 
                 if (no < mkPlayer.loadcount) {
-                    rem.mainList.displayNomore(); // 没加载满，说明已经加载完了
+                    rem.playList.displayNomore(); // 没加载满，说明已经加载完了
                 } else {
-                    rem.mainList.displayMore();  // 还可以点击加载更多
+                    rem.playList.displayMore();  // 还可以点击加载更多
                 }
 
-                if (this.loadPage == 2) rem.mainList.listToTop();    // 播放列表滚动到顶部
+                if (this.loadPage == 2) rem.playList.listToTop();    // 播放列表滚动到顶部
             },   //success
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 layer.msg('搜索结果获取失败 - ' + XMLHttpRequest.status);
@@ -201,7 +202,7 @@ DataFetcher.prototype = {
 
         $.ajax({
             type: mkPlayer.method,
-            url: "playlist/" + lid + ".json",
+            url: "albums/" + lid + ".json",
             //data: "types=playlist&id=" + lid,
             data: {},
             datatype: "json",
@@ -247,12 +248,12 @@ DataFetcher.prototype = {
                 if (musicList[id].creatorID) {
                     tempList.creatorID = musicList[id].creatorID;
                     if (musicList[id].creatorID === rem.uid) {   // 是当前登录用户的歌单，要保存到缓存中
-                        var tmpUlist = rem.dataSaver.readdata('ulist');    // 读取本地记录的用户歌单
+                        var tmpUlist = this.dataSaver.readdata('ulist');    // 读取本地记录的用户歌单
                         if (tmpUlist) {  // 读取到了
                             for (i = 0; i < tmpUlist.length; i++) {  // 匹配歌单
                                 if (tmpUlist[i].id == lid) {
                                     tmpUlist[i] = tempList; // 保存歌单中的歌曲
-                                    rem.dataSaver.savedata('ulist', tmpUlist);  // 保存
+                                    this.dataSaver.savedata('ulist', tmpUlist);  // 保存
                                     break;
                                 }
                             }
@@ -264,7 +265,7 @@ DataFetcher.prototype = {
                 musicList[id] = tempList;
 
                 // 首页显示默认列表
-                if (id == mkPlayer.defaultlist) rem.mainList.loadList(id);
+                if (id == mkPlayer.defaultlist) rem.playList.loadList(id);
                 if (callback) callback(id);    // 调用回调函数
 
                 // 改变前端列表
@@ -344,8 +345,8 @@ DataFetcher.prototype = {
                     rem.uname = jsonData.playlist[0].creator.nickname;  // 第一个列表(喜欢列表)的创建者即用户昵称
                     layer.msg('欢迎您 ' + rem.uname);
                     // 记录登录用户
-                    rem.dataSaver.savedata('uid', rem.uid);
-                    rem.dataSaver.savedata('uname', rem.uname);
+                    this.dataSaver.savedata('uid', rem.uid);
+                    this.dataSaver.savedata('uname', rem.uname);
 
                     for (var i = 0; i < jsonData.playlist.length; i++) {
                         // 获取歌单信息
@@ -362,7 +363,7 @@ DataFetcher.prototype = {
                         rem.sheetList.addSheet(musicList.push(tempList) - 1, tempList.name, tempList.cover);
                         userList.push(tempList);
                     }
-                    rem.dataSaver.savedata('ulist', userList);
+                    this.dataSaver.savedata('ulist', userList);
                     // 显示退出登录的提示条
                     rem.sheetList.sheetBar();
                 }

@@ -1,4 +1,6 @@
-function SheetList(isMobile) {
+function SheetList(isMobile, dataSaver) {
+    this.dataSaver = dataSaver;
+
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.listContainer =  $("#sheet");
     } else {
@@ -12,6 +14,65 @@ function SheetList(isMobile) {
 
         this.listContainer = $("#sheet .mCSB_container");
     }
+
+    // 点击专辑显示专辑歌曲
+    var that = this;
+    this.listContainer.on("click", ".sheet-cover,.sheet-name", function () {
+        var num = parseInt($(this).parent().data("no"));
+        // 是用户列表，但是还没有加载数据
+        if (musicList[num].item.length === 0 && musicList[num].creatorID) {
+            layer.msg('列表读取中...', { icon: 16, shade: 0.01, time: 500 }); // 0代表加载的风格，支持0-2
+            // ajax加载数据
+            rem.dataFetcher.ajaxPlayList(musicList[num].id, num, rem.playList.loadList);
+            return true;
+        }
+        rem.playList.loadList(num);
+    });
+
+    // 点击同步云音乐
+    this.listContainer.on("click", ".login-in", function () {
+        layer.prompt(
+            {
+                title: '请输入您的网易云 UID',
+                // value: '',  // 默认值
+                btn: ['确定', '取消', '帮助'],
+                btn3: function (index, layero) {
+                    layer.open({
+                        title: '如何获取您的网易云UID？'
+                        , shade: 0.6 //遮罩透明度
+                        , anim: 0 //0-6的动画形式，-1不开启
+                        , content: String.format(
+                            '1、首先<a href="http://music.163.com/" target="_blank">点我(http://music.163.com/)</a>打开网易云音乐官网<br>' +
+                            '2、然后点击页面右上角的“登录”，登录您的账号<br>' +
+                            '3、点击您的头像，进入个人中心<br>' +
+                            '4、此时<span style="color:red">浏览器地址栏</span> <span style="color: green">/user/home?id=</span> 后面的<span style="color:red">数字</span>就是您的网易云 UID')
+                    });
+                }
+            },
+            function (val, index) {   // 输入后的回调函数
+                if (isNaN(val)) {
+                    layer.msg('uid 只能是数字', { anim: 6 });
+                    return false;
+                }
+                layer.close(index);     // 关闭输入框
+                rem.dateFetcher.ajaxUserList(val);
+            });
+    });
+
+    // 刷新用户列表
+    this.listContainer.on("click", ".login-refresh", function () {
+        that.dataSaver.savedata('ulist', '');
+        layer.msg('刷新歌单');
+        that.clearUserlist();
+    });
+
+    // 退出登录
+    this.listContainer.on("click", ".login-out", function () {
+        that.dataSaver.savedata('uid', '');
+        that.dataSaver.savedata('ulist', '');
+        layer.msg('已退出');
+        that.clearUserlist();
+    });
 }
 
 SheetList.prototype = {
@@ -31,7 +92,7 @@ SheetList.prototype = {
     // 歌单列表底部登陆条
     sheetBar: function () {
         var barHtml;
-        if (rem.dataSaver.readdata('uid')) {
+        if (this.dataSaver.readdata('uid')) {
             barHtml = String.format('已同步 {0} 的歌单 <span class="login-btn login-refresh">[刷新]</span> <span class="login-btn login-out">[退出]</span>', rem.uname );
         } else {
             barHtml = '我的歌单 <span class="login-btn login-in">[点击同步]</span>';
@@ -42,75 +103,14 @@ SheetList.prototype = {
         this.listContainer.append(String.format(barHtmlTemplate, barHtml));
     },
 
-    initializeMusicSheet: function () {
-        // 点击专辑显示专辑歌曲
-        var that = this;
-        this.listContainer.on("click", ".sheet-cover,.sheet-name", function () {
-            var num = parseInt($(this).parent().data("no"));
-            // 是用户列表，但是还没有加载数据
-            if (musicList[num].item.length === 0 && musicList[num].creatorID) {
-                layer.msg('列表读取中...', { icon: 16, shade: 0.01, time: 500 }); // 0代表加载的风格，支持0-2
-                // ajax加载数据
-                rem.dataFetcher.ajaxPlayList(musicList[num].id, num, rem.mainList.loadList);
-                return true;
-            }
-            rem.mainList.loadList(num);
-        });
-
-        // 点击同步云音乐
-        this.listContainer.on("click", ".login-in", function () {
-            layer.prompt(
-                {
-                    title: '请输入您的网易云 UID',
-                    // value: '',  // 默认值
-                    btn: ['确定', '取消', '帮助'],
-                    btn3: function (index, layero) {
-                        layer.open({
-                            title: '如何获取您的网易云UID？'
-                            , shade: 0.6 //遮罩透明度
-                            , anim: 0 //0-6的动画形式，-1不开启
-                            , content: String.format(
-                                '1、首先<a href="http://music.163.com/" target="_blank">点我(http://music.163.com/)</a>打开网易云音乐官网<br>' +
-                                '2、然后点击页面右上角的“登录”，登录您的账号<br>' +
-                                '3、点击您的头像，进入个人中心<br>' +
-                                '4、此时<span style="color:red">浏览器地址栏</span> <span style="color: green">/user/home?id=</span> 后面的<span style="color:red">数字</span>就是您的网易云 UID')
-                        });
-                    }
-                },
-                function (val, index) {   // 输入后的回调函数
-                    if (isNaN(val)) {
-                        layer.msg('uid 只能是数字', { anim: 6 });
-                        return false;
-                    }
-                    layer.close(index);     // 关闭输入框
-                    rem.dateFetcher.ajaxUserList(val);
-                });
-        });
-
-        // 刷新用户列表
-        this.listContainer.on("click", ".login-refresh", function () {
-            rem.dataSaver.savedata('ulist', '');
-            layer.msg('刷新歌单');
-            that.clearUserlist();
-        });
-
-        // 退出登录
-        this.listContainer.on("click", ".login-out", function () {
-            rem.dataSaver.savedata('uid', '');
-            rem.dataSaver.savedata('ulist', '');
-            layer.msg('已退出');
-            that.clearUserlist();
-        });
-    },
-
     //TODO: refactor the method, too complicated
     //初始化播放列表
     initList: function () {
         // 登陆过，那就读取出用户的歌单，并追加到系统歌单的后面
-        if (rem.dataSaver.readdata('uid')) {
-            rem.uid = rem.dataSaver.readdata('uid');
-            rem.uname = rem.dataSaver.readdata('uname');
-            var tmp_ulist = rem.dataSaver.readdata('ulist');    // 读取本地记录的用户歌单
+        if (this.dataSaver.readdata('uid')) {
+            rem.uid = this.dataSaver.readdata('uid');
+            rem.uname = this.dataSaver.readdata('uname');
+            var tmp_ulist = this.dataSaver.readdata('ulist');    // 读取本地记录的用户歌单
 
             if (tmp_ulist) musicList.push.apply(musicList, tmp_ulist);   // 追加到系统歌单的后面
         }
@@ -120,7 +120,7 @@ SheetList.prototype = {
 
             if (i == CONST.PLAYING_LIST_ID) {    // 正在播放列表
                 // 读取正在播放列表
-                var tmp_item = rem.dataSaver.readdata('playing');
+                var tmp_item = this.dataSaver.readdata('playing');
                 if (tmp_item) {  // 读取到了正在播放列表
                     playingMusicList.item = tmp_item;
                     mkPlayer.defaultlist = CONST.PLAYING_LIST_ID;   // 默认显示正在播放列表
@@ -128,7 +128,7 @@ SheetList.prototype = {
 
             } else if (i == CONST.PLAYED_HISTORY_LIST_ID) { // 历史记录列表
                 // 读取历史记录
-                var tmp_item = rem.dataSaver.readdata('his');
+                var tmp_item = this.dataSaver.readdata('his');
                 if (tmp_item) {
                     historyMusicList.item = tmp_item;
                 }
@@ -149,7 +149,7 @@ SheetList.prototype = {
         }
 
         // 登陆了，但歌单又没有，说明是在刷新歌单
-        if (rem.dataSaver.readdata('uid') && !tmp_ulist) {
+        if (this.dataSaver.readdata('uid') && !tmp_ulist) {
             rem.dateFetcher.ajaxUserList(rem.uid);
             return true;
         }
@@ -157,7 +157,7 @@ SheetList.prototype = {
         // 首页显示默认列表
         if (mkPlayer.defaultlist >= musicList.length) mkPlayer.defaultlist = 1;  // 超出范围，显示正在播放列表
 
-        if (musicList[mkPlayer.defaultlist].isloading !== true) rem.mainList.loadList(mkPlayer.defaultlist);
+        if (musicList[mkPlayer.defaultlist].isloading !== true) rem.playList.loadList(mkPlayer.defaultlist);
 
         // 显示最后一项登陆条
         this.sheetBar();
@@ -191,10 +191,10 @@ SheetList.prototype = {
     clearDislist: function () {
         musicList[rem.dislist].item.length = 0;  // 清空内容
         if (rem.dislist == CONST.PLAYING_LIST_ID) {  // 正在播放列表
-            rem.dataSaver.savedata('playing', '');  // 清空本地记录
+            this.dataSaver.savedata('playing', '');  // 清空本地记录
             $(".sheet-item[data-no='1'] .sheet-cover").attr('src', 'images/player_cover.png');    // 恢复正在播放的封面
         } else if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID) {   // 播放记录
-            rem.dataSaver.savedata('his', '');  // 清空本地记录
+            this.dataSaver.savedata('his', '');  // 清空本地记录
         }
         layer.msg('列表已被清空');
         rem.controlPanel.dataBox("sheet");  // 在主界面显示出音乐专辑

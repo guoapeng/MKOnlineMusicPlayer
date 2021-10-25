@@ -172,7 +172,7 @@ function updateMinfo(music) {
 
 // 将当前歌曲加入播放历史
 // 参数：要添加的音乐
-function addHis(music) {
+function addHistory(music, dataSaver) {
     if (rem.playlist == CONST.PLAYED_HISTORY_LIST_ID) return true;  // 在播放“播放记录”列表则不作改变
 
     if (historyMusicList.item.length > 300) historyMusicList.item.length = 299; // 限定播放历史最多是 300 首
@@ -189,5 +189,5 @@ function addHis(music) {
     // 再放到第一位
     historyMusicList.item.unshift(music);
 
-    rem.dataSaver.savedata('his', historyMusicList.item);  // 保存播放历史列表
+    dataSaver.savedata('his', historyMusicList.item);  // 保存播放历史列表
 }

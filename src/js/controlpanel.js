@@ -1,45 +1,43 @@
-function ControlPanel() {
+function ControlPanel(dataSaver) {
+
+    this.dataSaver = dataSaver;
+     
+    var that = this;
+
+    window.addEventListener("adjusttimeByPercent", function (e) {
+        that.mBcallback(e.percent);
+    });
+
+    window.addEventListener("vb-adjusttime", function (e) {
+        that.vBcallback(e.adjustToTime);
+    });
+
+    $("#music-info").on("click", function () {
+        if (rem.playid === undefined) {
+            layer.msg('请先播放歌曲');
+            return false;
+        }
+        Utils.musicInfo(rem.playlist, rem.playid);
+    });
+    // 播放、暂停按钮的处理
+    $(".btn-play").on("click", function () {
+        that.pause();
+    });
+    // 循环顺序的处理
+    $(".btn-order").on("click", function () {
+        that.orderChange();
+    });
+    // 上一首歌
+    $(".btn-prev").on("click", function () {
+        that.prevMusic();
+    });
+    // 下一首
+    $(".btn-next").on("click", function () {
+        that.nextMusic();
+    });
 }
 
 ControlPanel.prototype = {
-    initialize: function () {
-
-        _controlPanel = this;
-
-        window.addEventListener("adjusttimeByPercent", function (e) {
-            _controlPanel.mBcallback(e.percent);
-        });
-
-        window.addEventListener("vb-adjusttime", function (e) {
-            _controlPanel.vBcallback(e.adjustToTime);
-        });
-
-        $("#music-info").on("click", function () {
-            if (rem.playid === undefined) {
-                layer.msg('请先播放歌曲');
-                return false;
-            }
-            Utils.musicInfo(rem.playlist, rem.playid);
-        });
-        // 播放、暂停按钮的处理
-        $(".btn-play").on("click", function () {
-            _controlPanel.pause();
-        });
-        // 循环顺序的处理
-        $(".btn-order").on("click", function () {
-            _controlPanel.orderChange();
-        });
-        // 上一首歌
-        $(".btn-prev").on("click", function () {
-            _controlPanel.prevMusic();
-        });
-
-        // 下一首
-        $(".btn-next").on("click", function () {
-            _controlPanel.nextMusic();
-        });
-
-    },
     // 音量条变动回调函数
     // 参数：新的值
     vBcallback: function (newVal) {
@@ -52,7 +50,7 @@ ControlPanel.prototype = {
 
         if (newVal === 0) $(".btn-quiet").addClass("btn-state-quiet");
 
-        rem.dataSaver.savedata('volume', newVal); // 存储音量信息
+        this.dataSaver.savedata('volume', newVal); // 存储音量信息
     },
 
     // 音乐进度条拖动回调函数
@@ -283,11 +281,11 @@ ControlPanel.prototype = {
             return false;
         }
 
-        addHis(music);  // 添加到播放历史
+        addHistory(music, this.dataSaver);  // 添加到播放历史
 
         // 如果当前主界面显示的是播放历史，那么还需要刷新列表显示
         if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID && rem.playlist !== CONST.PLAYED_HISTORY_LIST_ID) {
-            rem.mainList.loadList(2);
+            rem.playList.loadList(2);
         } else {
             rem.sheetList.refreshList();  // 更新列表显示
         }
@@ -311,9 +309,9 @@ ControlPanel.prototype = {
                 playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
 
                 // 正在播放 列表项已发生变更，进行保存
-                rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
+                this.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
 
-                rem.mainList.listClick(0);
+                rem.playList.listClick(0);
             }
             rem.audioPlayer.getAudio().play();
         }

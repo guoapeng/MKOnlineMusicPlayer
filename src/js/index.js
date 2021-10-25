@@ -44,30 +44,21 @@ $(function () {
     rem.webTitle = document.title;          // 记录页面原本的标题
     rem.errCount = 0;        
     rem.dataSaver = new DataSaver();        // 连续播放失败的歌曲数归零
-    rem.controlPanel = new ControlPanel();
+    rem.controlPanel = new ControlPanel(rem.dataSaver);
     // 初始化播放进度条
     new ProgressBar("#music-progress", 0, true); // 未播放时锁定不让拖动
-    new VolumeBar("#volume-progress", false);
+    new VolumeBar("#volume-progress", false, rem.dataSaver);
     rem.audioPlayer =  new AudioPlayer(); // 初始化 audio 标签，事件绑定
-    rem.controlPanel.initialize();
-    rem.controlPanel.initBg();
-    
-    rem.mainList = new MainList(rem.isMobile);
-    rem.mainList.init();
+    new BackgroundManager();
+    rem.playList = new PlayList(rem.isMobile);
     rem.downloader = new Downloader();
-    
     rem.coverManager = new CoverManager();
     rem.ajaxShare = new AjaxShare();
-    rem.dataFetcher = new DataFetcher();
-    
-    rem.sheetList = new SheetList(rem.isMobile);
-    
-    rem.sheetList.initializeMusicSheet();
-
+    rem.dataFetcher = new DataFetcher(rem.dataSaver);
+    rem.sheetList = new SheetList(rem.isMobile, rem.dataSaver);
     // 初始化播放列表
     rem.sheetList.initList();
 });
-
 
 // 快捷键切歌，代码来自 @茗血(https://www.52benxi.cn/)
 //TODO: 这一段应该找个合适的地方存放, 需要给它找个主人

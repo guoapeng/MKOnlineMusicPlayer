@@ -22,7 +22,6 @@
     <!--QQ强制全屏-->
     <meta name="x5-page-mode" content="app">
     <!--QQ应用模式-->
-
     <title>MKOnlinePlayer v2.4</title>
     <meta name="description" content="一款开源的基于网易云音乐api的在线音乐播放器。具有音乐搜索、播放、下载、歌词同步显示、个人音乐播放列表同步等功能。" />
     <meta name="keywords" content="孟坤播放器,在线音乐播放器,MKOnlinePlayer,网易云音乐,音乐api,音乐播放器源代码" />
@@ -67,7 +66,7 @@
                 <!-- tab按钮区 -->
                 <div class="btn-box" id="btn-area">
                     <span class="btn" onClick="rem.controlPanel.dataBox('player');" data-action="player" hidden>播放器</span>
-                    <span class="btn" onClick="rem.mainList.loadList(1)" data-action="playing"
+                    <span class="btn" onClick="rem.playList.loadList(1)" data-action="playing"
                         title="正在播放列表">正在播放</span>
                     <span class="btn" onClick="rem.controlPanel.dataBox('sheet')" 　data-action="sheet" title="音乐播放列表">播放列表</span>
                     <span class="btn" onClick="Utils.searchBox()" data-action="search" title="点击搜索音乐">歌曲搜索</span>
@@ -148,16 +147,16 @@
     <!--class="footer"-->
 
     <!-- jQuery文件 -->
-    <script src="js/lib/jquery.min.js"></script>
+    <script src="libs/jquery.min.js"></script>
 
     <!-- 滚动条美化插件 -->
-    <script src="js/lib/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="libs/jquery.mCustomScrollbar.concat.min.js"></script>
 
     <!-- 背景模糊化插件 -->
-    <script src="js/lib/background-blur.min.js"></script>
+    <script src="libs/background-blur.min.js"></script>
 
-    <!-- 库函数 -->
-    <script src="js/libraries.js"></script>
+    <!-- 库函数 工具类 工具方法-->
+    <script src="js/utils.js"></script>
 
     <!-- 常量定义 -->
     <script src="js/constant.js"></script>
@@ -182,6 +181,8 @@
     <script src="js/share.js"></script>
     <script src="js/download.js"></script>
 
+    <!-- 背景管理 -->
+    <script src="js/backgroundManager.js"></script>
     <!-- 控制面板 -->
     <script src="js/controlpanel.js"></script>
 
@@ -189,13 +190,13 @@
     <script src="js/audioplayer.js"></script>
 
     <!-- 音乐播放列表 -->
-    <script src="js/mainlist.js"></script>
+    <script src="js/playlist.js"></script>
 
     <!-- 歌曲歌单 -->
     <script src="js/musicsheet.js"></script>
 
     <!-- 封装函数及ui交互模块 -->
-    <script src="js/main.js"></script>
+    <script src="js/index.js"></script>
 
     <!-- 进度条 -->
     <script src="js/ProgressBar.js"></script>

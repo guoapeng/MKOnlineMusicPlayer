@@ -46,7 +46,7 @@ MKOnlineMusicPlayer 是一款全屏的音乐播放器 UI 框架（为避免侵�
 | rem.uid | 当前已同步的用户的网易云 ID |
 | rem.uname | 已登录用户的用户名 |
 | rem.sheetList | 歌单容器操作对象 |
-| rem.mainList | 歌曲列表容器操作对象 |
+| rem.playList | 歌曲列表容器操作对象 |
 | rem.isMobile | 是否是手机浏览 |
 
 ### 致谢

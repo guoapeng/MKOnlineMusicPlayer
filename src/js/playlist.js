@@ -1,7 +1,7 @@
 // 加载列表中的提示条
 // 参数：类型（more、nomore、loading、nodata、clear）
-function MainList(isMobile) {
-
+function PlayList(isMobile) {
+    var _playList = this;
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.isMobile = true;
         this.listContainer = $("#main-list");
@@ -16,9 +16,71 @@ function MainList(isMobile) {
         });
         this.listContainer = $("#main-list .mCSB_container");
     }
+
+    this.displayLoading(); // 列表加载中
+    // 列表项双击播放
+    this.listContainer.on("dblclick", ".list-item", function () {
+        var num = parseInt($(this).data("no"));
+        if (isNaN(num)) return false;
+        this.listClick(num);
+    }.bind(this));
+
+    // 移动端列表项单击播放
+    this.listContainer.on("click", ".list-item", function () {
+        if (this.isMobile) {
+            var num = parseInt($(this).data("no"));
+            if (isNaN(num)) return false;
+            this.listClick(num);
+        }
+    }.bind(this));
+
+    // 小屏幕点击右侧小点查看歌曲详细信息
+    this.listContainer.on("click", ".list-mobile-menu", function () {
+        var num = parseInt($(this).parent().data("no"));
+        Utils.musicInfo(rem.dislist, num);
+        return false;
+    });
+
+    // 列表鼠标移过显示对应的操作按钮
+    this.listContainer.on("mousemove", ".list-item", function () {
+        var num = parseInt($(this).data("no"));
+        if (isNaN(num)) return false;
+        // 还没有追加菜单则加上菜单
+        if (!$(this).data("loadmenu")) {
+            var target = $(this).find(".music-name");
+            target.html(String.format(CONST.TEMPLATE_MUSIC_NAME_CULT, target.html(), num));
+            $(this).data("loadmenu", true);
+        }
+    });
+
+    // 列表中的菜单点击
+    this.listContainer.on("click", ".icon-play,.icon-download,.icon-share", function () {
+        var num = parseInt($(this).parent().data("no"));
+        if (isNaN(num)) return false;
+        switch ($(this).data("function")) {
+            case "play":    // 播放
+                _playList.listClick(num);     // 调用列表点击处理函数
+                break;
+            case "download":    // 下载
+                rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.downloader.download);
+                break;
+            case "share":   // 分享
+                // ajax 请求数据
+                rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.ajaxShare.ajaxShare);
+                break;
+        }
+        return true;
+    });
+    // 点击加载更多
+    this.listContainer.on("click", ".list-loadmore", function () {
+        $(".list-loadmore").removeClass('list-loadmore');
+        $(".list-loadmore").html('加载中...');
+        rem.dataFetcher.ajaxSearch();
+    });
+
 }
 
-MainList.prototype = {
+PlayList.prototype = {
 
     displayMore: function () {
         this.appendContent(CONST.MSG_CLICK_TO_LOAD_MORE);
@@ -40,7 +102,7 @@ MainList.prototype = {
         this.appendContent(CONST.MSG_EMPTY_PLAYING_LIST);
     },
 
-    clearMainList: function () {
+    clearPlayList: function () {
         this.listContainer.html('');
     },
 
@@ -59,69 +121,6 @@ MainList.prototype = {
         this.appendContent(CONST.PL_PLAYLIST_HEAD);
     },
 
-    init: function () {
-        _mainList = this;
-        this.displayLoading(); // 列表加载中
-        // 列表项双击播放
-        this.listContainer.on("dblclick", ".list-item", function () {
-            var num = parseInt($(this).data("no"));
-            if (isNaN(num)) return false;
-            this.listClick(num);
-        }.bind(this));
-
-        // 移动端列表项单击播放
-        this.listContainer.on("click", ".list-item", function () {
-            if (this.isMobile) {
-                var num = parseInt($(this).data("no"));
-                if (isNaN(num)) return false;
-                this.listClick(num);
-            }
-        }.bind(this));
-
-        // 小屏幕点击右侧小点查看歌曲详细信息
-        this.listContainer.on("click", ".list-mobile-menu", function () {
-            var num = parseInt($(this).parent().data("no"));
-            Utils.musicInfo(rem.dislist, num);
-            return false;
-        });
-
-        // 列表鼠标移过显示对应的操作按钮
-        this.listContainer.on("mousemove", ".list-item", function () {
-            var num = parseInt($(this).data("no"));
-            if (isNaN(num)) return false;
-            // 还没有追加菜单则加上菜单
-            if (!$(this).data("loadmenu")) {
-                var target = $(this).find(".music-name");
-                target.html(String.format(CONST.TEMPLATE_MUSIC_NAME_CULT, target.html(), num));
-                $(this).data("loadmenu", true);
-            }
-        });
-
-        // 列表中的菜单点击
-        this.listContainer.on("click", ".icon-play,.icon-download,.icon-share", function () {
-            var num = parseInt($(this).parent().data("no"));
-            if (isNaN(num)) return false;
-            switch ($(this).data("function")) {
-                case "play":    // 播放
-                    _mainList.listClick(num);     // 调用列表点击处理函数
-                    break;
-                case "download":    // 下载
-                    rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.downloader.download);
-                    break;
-                case "share":   // 分享
-                    // ajax 请求数据
-                    rem.dataFetcher.ajaxUrl(musicList[rem.dislist].item[num], rem.ajaxShare.ajaxShare);
-                    break;
-            }
-            return true;
-        });
-        // 点击加载更多
-        this.listContainer.on("click", ".list-loadmore", function () {
-            $(".list-loadmore").removeClass('list-loadmore');
-            $(".list-loadmore").html('加载中...');
-            rem.dataFetcher.ajaxSearch();
-        });
-    },
 
     // 播放列表滚动到顶部
     listToTop: function () {
@@ -155,7 +154,7 @@ MainList.prototype = {
             }
         }
 
-        this.clearMainList(); // 清空列表中原有的元素
+        this.clearPlayList(); // 清空列表中原有的元素
         //TODO: remove this method
         this.createListHeader();      // 向列表中加入列表头
 

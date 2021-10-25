@@ -1,10 +1,11 @@
 
 // mk进度条插件
 // 进度条框 id，初始量，回调函数
-function VolumeBar (bar, isLocked) {
+function VolumeBar (bar, isLocked, dataSaver) {
+    this.dataSaver = dataSaver;
     this.bar = bar;
     // 初始化音量设定
-    var tmp_vol = rem.dataSaver.readdata('volume');
+    var tmp_vol = this.dataSaver.readdata('volume');
     tmp_vol = (tmp_vol != null) ? tmp_vol : (rem.isMobile ? 1 : mkPlayer.volume);
     if (tmp_vol > 1 || tmp_vol < 0) {
         if (tmp_vol < 0) this.percent = 0;    // 范围限定
@@ -65,7 +66,7 @@ VolumeBar.prototype = {
                 $(this).data('volume', oldVol); // 记录当前音量值
                 oldVol = 0;
             }
-            rem.dataSaver.savedata('volume', oldVol); // 存储音量信息
+            mk.dataSaver.savedata('volume', oldVol); // 存储音量信息
             mk.goto(oldVol);    // 刷新音量显示
             var adjustTimeEvent = new Event('vb-adjusttime');
             adjustTimeEvent.adjustToTime = oldVol
