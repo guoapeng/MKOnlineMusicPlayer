@@ -44,11 +44,9 @@ ControlPanel.prototype = {
 
         rem.audioPlayer.setVolume(newVal); // 音频对象已加载则立即改变音量
 
-        if ($(".btn-quiet").is('.btn-state-quiet')) {
-            $(".btn-quiet").removeClass("btn-state-quiet");     // 取消静音
-        }
-
-        if (newVal === 0) $(".btn-quiet").addClass("btn-state-quiet");
+        if (newVal === 0 && !$(".btn-quiet").is('.btn-state-quiet')) {
+            $(".btn-quiet").addClass("btn-state-quiet");
+        } 
 
         this.dataSaver.savedata('volume', newVal); // 存储音量信息
     },

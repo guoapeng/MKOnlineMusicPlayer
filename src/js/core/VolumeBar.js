@@ -73,12 +73,11 @@ VolumeBar.prototype = {
             window.dispatchEvent(adjustTimeEvent)
         });
 
-        window.addEventListener('query-volume', function (e) {
+        window.addEventListener('query-volume', function () {
             var volumeFeedbackEvent = new Event('feedback-current-volume');
             volumeFeedbackEvent.currentVolume = mk.percent;
             window.dispatchEvent(volumeFeedbackEvent)
         });
-
 
         mk.goto(mk.percent);
 
@@ -99,7 +98,6 @@ VolumeBar.prototype = {
         var adjustTimeEvent = new Event('vb-adjusttime');
         adjustTimeEvent.adjustToTime = percent
         window.dispatchEvent(adjustTimeEvent)
-
         mk.goto(percent);
         return true;
     },
