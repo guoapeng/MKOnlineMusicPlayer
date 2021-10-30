@@ -79,7 +79,7 @@ SheetList.prototype = {
     // 添加一个歌单
     // 参数：编号、歌单名字、歌单封面
     addSheet: function (no, name, cover) {
-        if (!cover) cover = "images/player_cover.png";
+        if (!cover) cover = "src/images/player_cover.png";
         if (!name) name = "读取中...";
 
         var html = '<div class="sheet-item" data-no="' + '{0}' + '">' +
@@ -192,7 +192,7 @@ SheetList.prototype = {
         musicList[rem.dislist].item.length = 0;  // 清空内容
         if (rem.dislist == CONST.PLAYING_LIST_ID) {  // 正在播放列表
             this.dataSaver.savedata('playing', '');  // 清空本地记录
-            $(".sheet-item[data-no='1'] .sheet-cover").attr('src', 'images/player_cover.png');    // 恢复正在播放的封面
+            $(".sheet-item[data-no='1'] .sheet-cover").attr('src', 'src/images/player_cover.png');    // 恢复正在播放的封面
         } else if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID) {   // 播放记录
             this.dataSaver.savedata('his', '');  // 清空本地记录
         }

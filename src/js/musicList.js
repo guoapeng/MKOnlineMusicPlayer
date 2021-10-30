@@ -29,7 +29,7 @@ var musicList = [
     // 预留列表：播放历史
     {
         name: "播放历史",   // 播放列表名字
-        cover: "images/history.png",          // 播放列表封面
+        cover: "src/images/history.png",          // 播放列表封面
         creatorName: "",        // 列表创建者名字
         creatorAvatar: "",      // 列表创建者头像
         item: []

@@ -202,7 +202,7 @@ DataFetcher.prototype = {
 
         $.ajax({
             type: mkPlayer.method,
-            url: "albums/" + lid + ".json",
+            url: "src/albums/" + lid + ".json",
             //data: "types=playlist&id=" + lid,
             data: {},
             datatype: "json",
