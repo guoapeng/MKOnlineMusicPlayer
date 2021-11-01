@@ -9,7 +9,7 @@ function AudioPlayer() {
         vp.audio[0].volume = e.currentVolume;
     });
 
-    window.addEventListener("playAudio", function(e){
+    window.addEventListener("playAudio", function (e) {
         try {
             this.getAudio().pause();
             this.setSource(e.music.url);
@@ -17,7 +17,7 @@ function AudioPlayer() {
             this.getAudio().oncanplay = function () {
                 e.music.duration = this.getAudio().duration;
             }.bind(this);
-            
+
         } catch (e) {
             this.audioErr(); // 调用错误处理函数
             return;
@@ -28,16 +28,36 @@ function AudioPlayer() {
     window.dispatchEvent(queryVolumeEvent)
 
     // 绑定歌曲进度变化事件
-    vp.audio[0].addEventListener('timeupdate', rem.controlPanel.updateProgress.bind(rem.controlPanel));   // 更新进度
-    vp.audio[0].addEventListener('play', rem.controlPanel.audioPlay.bind(rem.controlPanel)); // 开始播放了
-    vp.audio[0].addEventListener('pause', rem.controlPanel.audioPause.bind(rem.controlPanel));   // 暂停
-    $(vp.audio[0]).on('ended', rem.controlPanel.autoNextMusic.bind(rem.controlPanel));   // 播放结束
-    vp.audio[0].addEventListener('error', rem.controlPanel.audioErr.bind(rem.controlPanel));   // 播放器错误处理
+    // 更新进度
+    vp.audio[0].addEventListener('timeupdate', function (e) {
+        vp.onTimeUpdate(e, vp.audio[0].currentTime);
+    });
+    // 开始播放了
+    vp.audio[0].addEventListener('play', function (e) {
+        var mbPlayEvent = new Event("mb-play");
+        window.dispatchEvent(mbPlayEvent)
+    });
+    // 暂停
+    vp.audio[0].addEventListener('pause', function (e) {
+        var mbPauseEvent = new Event("mb-pause");
+        window.dispatchEvent(mbPauseEvent)
+    });
+    // 播放结束
+    $(vp.audio[0]).on('ended', function (e) {
+        var mbEndedEvent = new Event("mb-ended");
+        window.dispatchEvent(mbEndedEvent)
+    });
+    // 播放器错误处理
+    vp.audio[0].addEventListener('error', function (e) {
+        var mbErrorEvent = new Event("mb-error");
+        window.dispatchEvent(mbErrorEvent)
+    });
+
 }
 
 AudioPlayer.prototype = {
 
-    pause: function() {
+    pause: function () {
         this.getAudio().pause();
     },
 
@@ -45,24 +65,38 @@ AudioPlayer.prototype = {
         return this.audio[0];
     },
 
-    setSource: function(source) {
+    setSource: function (source) {
         this.audio.attr('src', source);
     },
 
-    setVolume: function(newVal) {
+    setVolume: function (newVal) {
         if (this.getAudio() !== undefined) {   // 音频对象已加载则立即改变音量
             this.getAudio().volume = newVal;
         }
     },
 
-    setTime: function(newTime) {
+    setTime: function (newTime) {
         if (this.getAudio() !== undefined) {   // 音频对象已加载则立即改变音量
             this.getAudio().currentTime = newTime;
         }
     },
 
-    getProgress: function() {
-       return this.getAudio().currentTime / this.getAudio().duration;
+    onTimeUpdate: function (e, currentTime) {
+         // 暂停状态不管
+         if (rem.paused !== false) return true;
+         // 同步进度条1112345678910
+        var progressUpdateEvent = new Event("mb-progress-update");
+        progressUpdateEvent.percent = this.getProgress();
+        progressUpdateEvent.currentTime = currentTime;
+        window.dispatchEvent(progressUpdateEvent)
+    },
+
+    getProgress: function () {
+        return this.getAudio().currentTime / this.getAudio().duration;
+    },
+
+    getCurrentTime: function () {
+        return this.audioContainer.currentTime;
     },
     // 音频错误处理函数
     audioErr: function () {

@@ -12,6 +12,15 @@ function ControlPanel(dataSaver) {
         that.vBcallback(e.adjustToTime);
     });
 
+    // 绑定歌曲进度变化事件
+    window.addEventListener('mb-progress-update', function(e) {
+        that.updateProgress(e);
+    } ); // 更新进度
+    window.addEventListener('mb-play', that.audioPlay.bind(that)); // 开始播放了
+    window.addEventListener('mb-pause', that.audioPause.bind(that));   // 暂停
+    window.addEventListener('mb-ended', that.autoNextMusic.bind(that));   // 播放结束
+    window.addEventListener('mb-error', that.audioErr.bind(that));   // 播放器错误处理
+
     $("#music-info").on("click", function () {
         if (rem.playid === undefined) {
             layer.msg('请先播放歌曲');
@@ -199,15 +208,9 @@ ControlPanel.prototype = {
         }
     },
     // 歌曲时间变动回调函数
-    updateProgress: function () {
-        // 暂停状态不管
-        if (rem.paused !== false) return true;
-        // 同步进度条1112345678910
-        var progressUpdateEvent = new Event("mb-progress-update");
-        progressUpdateEvent.percent = rem.audioPlayer.getProgress();
-        window.dispatchEvent(progressUpdateEvent)
+    updateProgress: function (e) {
         // 同步歌词显示	
-        scrollLyric(rem.audioPlayer.getAudio().currentTime);
+        scrollLyric(e.currentTime);
     },
 
     // 播放正在播放列表中的歌曲
