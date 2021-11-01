@@ -2,6 +2,7 @@
 // 参数：类型（more、nomore、loading、nodata、clear）
 function PlayList(isMobile) {
     var _playList = this;
+    this.playid = undefined; //正在播放的这首歌在播放列表中的编号
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
         this.isMobile = true;
         this.listContainer = $("#main-list");
@@ -177,7 +178,7 @@ PlayList.prototype = {
                 this.displayClearBtn(); // 清空列表
             }
 
-            if (rem.playlist === undefined) {    // 未曾播放过
+            if (rem.playinglist === undefined) {    // 未曾播放过
                 if (mkPlayer.autoplay == true) rem.controlPanel.pause();  // 设置了自动播放，则自动播放
             } else {
                 rem.sheetList.refreshList();  // 刷新列表，添加正在播放样式
@@ -201,9 +202,9 @@ PlayList.prototype = {
         if (rem.dislist === CONST.SEARCH_RESULT_LIST_ID) {
 
             // 没播放过
-            if (rem.playlist === undefined) {
-                rem.playlist = 1;   // 设置播放列表为 正在播放 列表
-                rem.playid = playingMusicList.item.length - 1;  // 临时设置正在播放的曲目为 正在播放 列表的最后一首
+            if (rem.playinglist === undefined) {
+                rem.playinglist = 1;   // 设置播放列表为 正在播放 列表
+                this.playid = playingMusicList.item.length - 1;  // 临时设置正在播放的曲目为 正在播放 列表的最后一首
             }
 
             // 获取选定歌曲的信息
@@ -218,16 +219,16 @@ PlayList.prototype = {
                 }
             }
             // 将点击的这项追加到正在播放的条目的下方
-            playingMusicList.item.splice(rem.playid + 1, 0, tmpMusic);
-            tmpid = rem.playid + 1;
+            playingMusicList.item.splice(this.playid + 1, 0, tmpMusic);
+            tmpid = this.playid + 1;
 
             // 正在播放 列表项已发生变更，进行保存
             rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
         } else {    // 普通列表
             // 与之前不是同一个列表了（在播放别的列表的歌曲）或者是首次播放
-            if ((rem.dislist !== rem.playlist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playlist === undefined) {
-                rem.playlist = rem.dislist;     // 记录正在播放的列表
-                playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+            if ((rem.dislist !== rem.playinglist && rem.dislist !== CONST.PLAYING_LIST_ID) || rem.playinglist === undefined) {
+                rem.playinglist = rem.dislist;     // 记录正在播放的列表
+                playingMusicList.item = musicList[rem.playinglist].item; // 更新正在播放列表中音乐
                 // 正在播放 列表项已发生变更，进行保存
                 rem.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
 

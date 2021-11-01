@@ -15,9 +15,8 @@ var mkPlayer = {
     coverbg: true,      // 是否开启封面背景(true/false) *开启后会有些卡
     mcoverbg: true,     // 是否开启[移动端]封面背景(true/false)
     dotshine: true,    // 是否开启播放进度条的小点闪动效果[不支持IE](true/false) *开启后会有些卡
-    mdotshine: false,   // 是否开启[移动端]播放进度条的小点闪动效果[不支持IE](true/false)
     volume: 0.6,        // 默认音量值(0~1之间)
-    version: "v2.41",    // 播放器当前版本号(仅供调试)
+    version: "v3.0.0",    // 播放器当前版本号(仅供调试)
     debug: true   // 是否开启调试模式(true/false)
 };
 
@@ -44,11 +43,12 @@ $(function () {
     rem.webTitle = document.title;          // 记录页面原本的标题
     rem.errCount = 0;        
     rem.dataSaver = new DataSaver();        // 连续播放失败的歌曲数归零
-    rem.controlPanel = new ControlPanel(rem.dataSaver);
     // 初始化播放进度条
     new ProgressBar("#music-progress", 0, true); // 未播放时锁定不让拖动
     new VolumeBar("#volume-progress", false, rem.dataSaver);
     rem.audioPlayer =  new AudioPlayer(); // 初始化 audio 标签，事件绑定
+    rem.controlPanel = new ControlPanel(rem.dataSaver, rem.audioPlayer);
+    
     new BackgroundManager();
     rem.playList = new PlayList(rem.isMobile);
     rem.downloader = new Downloader();
@@ -67,7 +67,7 @@ document.onkeydown = function showkey(e) {
     var key = e.keyCode || e.which || e.charCode;
     var ctrl = e.ctrlKey || e.metaKey;
     var isFocus = $('input').is(":focus");  
-    if (ctrl && key == 37) rem.controlPanel.playList(rem.playid - 1);    // Ctrl+左方向键 切换上一首歌
-    if (ctrl && key == 39) rem.controlPanel.playList(rem.playid + 1);    // Ctrl+右方向键 切换下一首歌
+    if (ctrl && key == 37) rem.controlPanel.playList(rem.playList.playid - 1);    // Ctrl+左方向键 切换上一首歌
+    if (ctrl && key == 39) rem.controlPanel.playList(rem.playList.playid + 1);    // Ctrl+右方向键 切换下一首歌
     if (key == 32 && isFocus == false) rem.controlPanel.pause();         // 空格键 播放/暂停歌曲
 }

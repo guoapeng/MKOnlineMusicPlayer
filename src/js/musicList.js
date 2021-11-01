@@ -77,7 +77,7 @@ var musicList = [
                 pic_id: "2946691234868155",  // 封面ID
                 lyric_id: "436514312",  // 歌词ID
                 pic: "https://p3.music.126.net/34YW1QtKxJ_3YnX9ZzKhzw==/2946691234868155.jpg",    // 专辑图片
-                url: "https://guoapeng.github.io/lyrics/content/songs/na_ge.mp3"   // mp3链接（此项建议不填，除非你有该歌曲的比较稳定的外链）
+                url: "https://www.pengshu.net/lyrics/content/songs/na_ge.mp3"   // mp3链接（此项建议不填，除非你有该歌曲的比较稳定的外链）
             },
             // 下面演示插入各个平台的音乐。。。
             {
@@ -90,7 +90,7 @@ var musicList = [
                 pic_id: "18782957139233959",
                 lyric_id: "65528",
                 pic: "https://p3.music.126.net/BFuOepLmD63tY75UJs1c0Q==/18872017579169120.jpg",
-                url: "https://guoapeng.github.io/lyrics/content/songs/ni_neng_ting_jian_ma.mp3"
+                url: "https://www.pengshu.net/lyrics/content/songs/ni_neng_ting_jian_ma.mp3"
             },
             {
                 id: "001JD1SR29d1hS",
@@ -102,7 +102,7 @@ var musicList = [
                 pic_id: "004DYsvN2QCYcj",
                 lyric_id: "001JD1SR29d1hS",
                 pic: "https://y.gtimg.cn/music/photo_new/T002R300x300M000004DYsvN2QCYcj.jpg?max_age=2592000",
-                url: "https://guoapeng.github.io/lyrics/content/songs/gong_zhu_de_tian_tang.mp3"     // 腾讯的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
+                url: "https://www.pengshu.net/lyrics/content/songs/gong_zhu_de_tian_tang.mp3"     // 腾讯的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
             },
             {
                 id: "81175",
@@ -114,7 +114,7 @@ var musicList = [
                 pic_id: "81175",
                 lyric_id: "81175",
                 pic: "https://pic.xiami.net/images/album/img58/1258/66271400572139.jpg@300h_300w_100q_1c.jpg",
-                url: "https://guoapeng.github.io/lyrics/content/songs/na_nian_chu_xia.mp3"     // 虾米的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
+                url: "https://www.pengshu.net/lyrics/content/songs/na_nian_chu_xia.mp3"     // 虾米的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
             },
             {
                 id: "2a24dea6c74884195fe5b9732fd95ca8",
@@ -138,7 +138,7 @@ var musicList = [
                 pic_id: "121004737",
                 lyric_id: "121004737",
                 pic: "http://musicdata.baidu.com/data2/pic/2733cd9816b8618afd3038d5d9444940/266105319/266105319.jpg@s_0,w_150",
-                url: "https://guoapeng.github.io/lyrics/content/songs/closer_to_me.mp3"         // 百度的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
+                url: "https://www.pengshu.net/lyrics/content/songs/closer_to_me.mp3"         // 百度的外链有效期较短，插入时 url [必须]设置空值，播放时再临时抓取
             }  // 列表中最后一首歌大括号后面不要加逗号
         ]
     },
@@ -173,7 +173,7 @@ function updateMinfo(music) {
 // 将当前歌曲加入播放历史
 // 参数：要添加的音乐
 function addHistory(music, dataSaver) {
-    if (rem.playlist == CONST.PLAYED_HISTORY_LIST_ID) return true;  // 在播放“播放记录”列表则不作改变
+    if (rem.playinglist == CONST.PLAYED_HISTORY_LIST_ID) return true;  // 在播放“播放记录”列表则不作改变
 
     if (historyMusicList.item.length > 300) historyMusicList.item.length = 299; // 限定播放历史最多是 300 首
 

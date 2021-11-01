@@ -2,7 +2,7 @@ function SheetList(isMobile, dataSaver) {
     this.dataSaver = dataSaver;
 
     if (isMobile) {  // 加了滚动条插件和没加滚动条插件所操作的对象是不一样的
-        this.listContainer =  $("#sheet");
+        this.listContainer = $("#sheet");
     } else {
         // 滚动条初始化(只在非移动端启用滚动条控件)
         $("#sheet").mCustomScrollbar({
@@ -93,7 +93,7 @@ SheetList.prototype = {
     sheetBar: function () {
         var barHtml;
         if (this.dataSaver.readdata('uid')) {
-            barHtml = String.format('已同步 {0} 的歌单 <span class="login-btn login-refresh">[刷新]</span> <span class="login-btn login-out">[退出]</span>', rem.uname );
+            barHtml = String.format('已同步 {0} 的歌单 <span class="login-btn login-refresh">[刷新]</span> <span class="login-btn login-out">[退出]</span>', rem.uname);
         } else {
             barHtml = '我的歌单 <span class="login-btn login-in">[点击同步]</span>';
         }
@@ -204,29 +204,28 @@ SheetList.prototype = {
     refreshSheet: function () {
         // 调试信息输出
         if (mkPlayer.debug) {
-            console.log(String.format("开始播放列表 {0} 中的歌曲", musicList[rem.playlist].name ));
+            console.log(String.format("开始播放列表 {0} 中的歌曲", musicList[rem.playinglist].name));
         }
 
         $(".sheet-playing").removeClass("sheet-playing");        // 移除其它的正在播放
 
-        $(".sheet-item[data-no='" + rem.playlist + "']").addClass("sheet-playing"); // 添加样式
+        $(".sheet-item[data-no='" + rem.playinglist + "']").addClass("sheet-playing"); // 添加样式
     },
 
     // 刷新当前显示的列表，如果有正在播放则添加样式
     refreshList: function () {
         // 还没播放过，不用对比了
-        if (rem.playlist === undefined) return true;
+        if (rem.playinglist === undefined) return true;
 
         $(".list-playing").removeClass("list-playing");        // 移除其它的正在播放
 
-        if (rem.paused !== true) {   // 没有暂停
+        if (rem.audioPlayer.paused  !== true) {   // 没有暂停
             for (var i = 0; i < musicList[rem.dislist].item.length; i++) {
                 // 与正在播放的歌曲 id 相同
                 if ((musicList[rem.dislist].item[i].id !== undefined) &&
-                    (musicList[rem.dislist].item[i].id == playingMusicList.item[rem.playid].id) &&
-                    (musicList[rem.dislist].item[i].source == playingMusicList.item[rem.playid].source)) {
+                    (musicList[rem.dislist].item[i].id == playingMusicList.item[rem.playList.playid].id) &&
+                    (musicList[rem.dislist].item[i].source == playingMusicList.item[rem.playList.playid].source)) {
                     $(".list-item[data-no='" + i + "']").addClass("list-playing");  // 添加正在播放样式
-
                     return true;    // 一般列表中只有一首，找到了赶紧跳出
                 }
             }

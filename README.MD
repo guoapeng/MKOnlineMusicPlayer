@@ -39,8 +39,7 @@ MKOnlineMusicPlayer 是一款全屏的音乐播放器 UI 框架（为避免侵�
 
 | 变量名    | 用途   |
 | ----------- | ----------- |
-| rem.playlist | 当前正在播放的播放列表编号 |
-| rem.playid | 正在播放的这首歌在播放列表中的编号 |
+| rem.playinglist | 当前正在播放的播放列表编号 |
 | rem.dislist | 当前显示的列表的列表编号 |
 | rem.wd | 当前的搜索词 |
 | rem.source | 当前选定的音乐源 |

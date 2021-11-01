@@ -1,7 +1,8 @@
-function ControlPanel(dataSaver) {
+function ControlPanel(dataSaver, audioPlayer) {
 
     this.dataSaver = dataSaver;
-     
+    this.audioPlayer = audioPlayer;
+    this.order = 2;
     var that = this;
 
     window.addEventListener("adjusttimeByPercent", function (e) {
@@ -22,11 +23,11 @@ function ControlPanel(dataSaver) {
     window.addEventListener('mb-error', that.audioErr.bind(that));   // 播放器错误处理
 
     $("#music-info").on("click", function () {
-        if (rem.playid === undefined) {
+        if (rem.playList.playid === undefined) {
             layer.msg('请先播放歌曲');
             return false;
         }
-        Utils.musicInfo(rem.playlist, rem.playid);
+        Utils.musicInfo(rem.playList, rem.playList.playid);
     });
     // 播放、暂停按钮的处理
     $(".btn-play").on("click", function () {
@@ -51,7 +52,7 @@ ControlPanel.prototype = {
     // 参数：新的值
     vBcallback: function (newVal) {
 
-        rem.audioPlayer.setVolume(newVal); // 音频对象已加载则立即改变音量
+        this.audioPlayer.setVolume(newVal); // 音频对象已加载则立即改变音量
 
         if (newVal === 0 && !$(".btn-quiet").is('.btn-state-quiet')) {
             $(".btn-quiet").addClass("btn-state-quiet");
@@ -62,9 +63,9 @@ ControlPanel.prototype = {
 
     // 音乐进度条拖动回调函数
     mBcallback: function (newVal) {
-        var newTime = (rem.audioPlayer.getAudio().duration * newVal).toFixed(4);
+        var newTime = (this.audioPlayer.getAudio().duration * newVal).toFixed(4);
         // 应用新的进度
-        rem.audioPlayer.setTime(newTime);
+        this.audioPlayer.setTime(newTime);
         refreshLyric(newTime);  // 强制滚动歌词到当前进度
     },
 
@@ -99,7 +100,7 @@ ControlPanel.prototype = {
                 }
                 $("#main-list").fadeIn();
                 $("#sheet").fadeOut();
-                if (rem.dislist == CONST.PLAYING_LIST_ID || rem.dislist == rem.playlist) {  // 正在播放
+                if (rem.dislist == CONST.PLAYING_LIST_ID || rem.dislist == rem.playinglist) {  // 正在播放
                     $(".btn[data-action='playing']").addClass('active');
                 } else if (rem.dislist == CONST.SEARCH_RESULT_LIST_ID) {  // 搜索
                     $(".btn[data-action='search']").addClass('active');
@@ -126,15 +127,15 @@ ControlPanel.prototype = {
 
     // 播放
     audioPlay: function () {
-        rem.paused = false;     // 更新状态（未暂停）
+        this.audioPlayer.paused = false;     // 更新状态（未暂停）
         rem.sheetList.refreshList();      // 刷新状态，显示播放的波浪
         $(".btn-play").addClass("btn-state-paused");        // 恢复暂停
 
-        if ((mkPlayer.dotshine === true && !rem.isMobile) || (mkPlayer.mdotshine === true && rem.isMobile)) {
+        if (mkPlayer.dotshine) {
             $("#music-progress .mkpgb-dot").addClass("dot-move");   // 小点闪烁效果
         }
 
-        var music = musicList[rem.playlist].item[rem.playid];   // 获取当前播放的歌曲信息
+        var music = musicList[rem.playinglist].item[rem.playList.playid];   // 获取当前播放的歌曲信息
         var msg = " 正在播放: " + music.name + " - " + music.artist;  // 改变浏览器标题
 
         // 清除定时器
@@ -159,19 +160,19 @@ ControlPanel.prototype = {
     orderChange: function () {
         var orderDiv = $(".btn-order");
         orderDiv.removeClass();
-        switch (rem.order) {
+        switch (this.order) {
             case 1:     // 单曲循环 -> 列表循环
                 orderDiv.addClass("player-btn btn-order btn-order-list");
                 orderDiv.attr("title", "列表循环");
                 layer.msg("列表循环");
-                rem.order = 2;
+                this.order = 2;
                 break;
 
             case 3:     // 随机播放 -> 单曲循环
                 orderDiv.addClass("player-btn btn-order btn-order-single");
                 orderDiv.attr("title", "单曲循环");
                 layer.msg("单曲循环");
-                rem.order = 1;
+                this.order = 1;
                 break;
 
             // case 2:
@@ -179,12 +180,12 @@ ControlPanel.prototype = {
                 orderDiv.addClass("player-btn btn-order btn-order-random");
                 orderDiv.attr("title", "随机播放");
                 layer.msg("随机播放");
-                rem.order = 3;
+                this.order = 3;
         }
     },
     // 暂停
     audioPause: function () {
-        rem.paused = true;      // 更新状态（已暂停）
+        this.audioPlayer.paused = true;      // 更新状态（已暂停）
 
         $(".list-playing").removeClass("list-playing");        // 移除其它的正在播放
 
@@ -201,8 +202,8 @@ ControlPanel.prototype = {
 
     // 自动播放时的下一首歌
     autoNextMusic: function () {
-        if (rem.order && rem.order === 1) {
-            this.playList(rem.playid);
+        if (this.order && this.order === 1) {
+            this.playList(rem.playList.playid);
         } else {
             this.nextMusic();
         }
@@ -217,7 +218,7 @@ ControlPanel.prototype = {
     // 参数：歌曲在列表中的ID
     playList: function (id) {
         // 第一次播放
-        if (rem.playlist === undefined) {
+        if (rem.playinglist === undefined) {
             this.pause();
             return true;
         }
@@ -229,7 +230,7 @@ ControlPanel.prototype = {
         if (id < 0) id = playingMusicList.item.length - 1;
 
         // 记录正在播放的歌曲在正在播放列表中的 id
-        rem.playid = id;
+        rem.playList.playid = id;
 
         // 如果链接为空，则 ajax 获取数据后再播放
         if (playingMusicList.item[id].url === null || playingMusicList.item[id].url === "") {
@@ -241,9 +242,9 @@ ControlPanel.prototype = {
 
     // 播放下一首歌
     nextMusic: function () {
-        switch (rem.order ? rem.order : 1) {
+        switch (this.order ? this.order : 1) {
             case 1, 2:
-                rem.controlPanel.playList(rem.playid + 1);
+                rem.controlPanel.playList(rem.playList.playid + 1);
                 break;
             case 3:
                 if (playingMusicList && playingMusicList.item.length) {
@@ -252,7 +253,7 @@ ControlPanel.prototype = {
                 }
                 break;
             default:
-                rem.controlPanel.playList(rem.playid + 1);
+                rem.controlPanel.playList(rem.playList.playid + 1);
                 break;
         }
     },
@@ -285,7 +286,7 @@ ControlPanel.prototype = {
         addHistory(music, this.dataSaver);  // 添加到播放历史
 
         // 如果当前主界面显示的是播放历史，那么还需要刷新列表显示
-        if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID && rem.playlist !== CONST.PLAYED_HISTORY_LIST_ID) {
+        if (rem.dislist == CONST.PLAYED_HISTORY_LIST_ID && rem.playinglist !== CONST.PLAYED_HISTORY_LIST_ID) {
             rem.playList.loadList(2);
         } else {
             rem.sheetList.refreshList();  // 更新列表显示
@@ -300,28 +301,28 @@ ControlPanel.prototype = {
 
     // 点击暂停按钮的事件
     pause: function () {
-        if (rem.paused === false) {  // 之前是播放状态
-            rem.audioPlayer.getAudio().pause();  // 暂停
+        if (this.audioPlayer.paused === false) {  // 之前是播放状态
+            this.audioPlayer.getAudio().pause();  // 暂停
         } else {
             // 第一次点播放
-            if (rem.playlist === undefined) {
-                rem.playlist = rem.dislist;
+            if (rem.playinglist === undefined) {
+                rem.playinglist = rem.dislist;
 
-                playingMusicList.item = musicList[rem.playlist].item; // 更新正在播放列表中音乐
+                playingMusicList.item = musicList[rem.playinglist].item; // 更新正在播放列表中音乐
 
                 // 正在播放 列表项已发生变更，进行保存
                 this.dataSaver.savedata('playing', playingMusicList.item);   // 保存正在播放列表
 
                 rem.playList.listClick(0);
             }
-            rem.audioPlayer.getAudio().play();
+            this.audioPlayer.getAudio().play();
         }
     },
 
     // 音频错误处理函数
     audioErr: function () {
         // 没播放过，直接跳过
-        if (rem.playlist === undefined) return true;
+        if (rem.playinglist === undefined) return true;
 
         if (rem.errCount > 10) { // 连续播放失败的歌曲过多
             layer.msg('似乎出了点问题~播放已停止');
@@ -335,7 +336,7 @@ ControlPanel.prototype = {
 
     // 播放上一首歌
     prevMusic: function () {
-        this.playList(rem.playid - 1);
+        this.playList(rem.playList.playid - 1);
     },
 
     // 下载正在播放的这首歌

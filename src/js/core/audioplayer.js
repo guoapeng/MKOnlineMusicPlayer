@@ -1,5 +1,6 @@
 function AudioPlayer() {
     this.audio = $('<audio></audio>').appendTo('body');
+    this.paused = true;
     vp = this;
     rem.audio = this.audio;
     // 应用初始音量
@@ -83,7 +84,7 @@ AudioPlayer.prototype = {
 
     onTimeUpdate: function (e, currentTime) {
          // 暂停状态不管
-         if (rem.paused !== false) return true;
+         if (vp.paused !== false) return true;
          // 同步进度条1112345678910
         var progressUpdateEvent = new Event("mb-progress-update");
         progressUpdateEvent.percent = this.getProgress();
@@ -101,7 +102,7 @@ AudioPlayer.prototype = {
     // 音频错误处理函数
     audioErr: function () {
         // 没播放过，直接跳过
-        if (rem.playlist === undefined) return true;
+        if (rem.playinglist === undefined) return true;
 
         if (rem.errCount > 10) { // 连续播放失败的歌曲过多
             layer.msg('似乎出了点问题~播放已停止');
